@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 92" fill="none">
+  <defs>
+    <linearGradient id="heartGrad" x1="10" y1="5" x2="88" y2="86" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FF4D6A"/>
+      <stop offset="100%" stop-color="#C41830"/>
+    </linearGradient>
+  </defs>
+  <path
+    d="M50,84 C50,84 7,57 7,29 C7,14 18,5 30,5 C39,5 46,10 50,19 C54,10 61,5 70,5 C82,5 93,14 93,29 C93,57 50,84 50,84 Z"
+    fill="url(#heartGrad)"
+  />
+  <polyline
+    points="22,52 39,69 79,30"
+    stroke="white"
+    stroke-width="9.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
+  />
+</svg>
