@@ -3,7 +3,7 @@ import { supabaseAdmin } from "@/lib/supabase-server";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { para, de, nombre_estrella, mensaje, codigo_secreto, operacion_id, config } = body;
+  const { para, de, nombre_estrella, mensaje, codigo_secreto, operacion_id, config, email_comprador } = body;
 
   if (!para || !de || !nombre_estrella || !mensaje || !codigo_secreto) {
     return NextResponse.json(
@@ -23,6 +23,7 @@ export async function POST(req: NextRequest) {
       operacion_id: operacion_id ?? null,
       config: config ?? {},
       pagada: false,
+      email_comprador: email_comprador?.trim() || null,
     })
     .select("id")
     .single();

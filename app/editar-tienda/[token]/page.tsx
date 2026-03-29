@@ -79,7 +79,7 @@ export default function EditarTiendaPage() {
 
   if (cargando) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-white pt-16">
         <Navbar maxWidth="max-w-2xl" />
         <div className="mx-auto max-w-2xl px-6 py-24 text-center text-muted-foreground">
           Cargando...
@@ -90,7 +90,7 @@ export default function EditarTiendaPage() {
 
   if (error && !tienda) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-white pt-16">
         <Navbar maxWidth="max-w-2xl" />
         <div className="mx-auto max-w-2xl px-6 py-24 text-center">
           <p className="text-lg font-semibold text-foreground mb-2">Enlace inválido o expirado</p>
@@ -108,7 +108,7 @@ export default function EditarTiendaPage() {
   const cat = tienda ? CATEGORIAS[tienda.categoria] : null;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pt-16">
       <Navbar maxWidth="max-w-2xl" />
 
       <div className="mx-auto max-w-2xl px-6 pt-4">

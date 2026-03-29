@@ -190,6 +190,7 @@ export default function EstrellaCrearPage() {
   const [nombreEstrella, setNombreEstrella] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [codigoSecreto, setCodigoSecreto] = useState("");
+  const [emailComprador, setEmailComprador] = useState("");
   const [terminos, setTerminos] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState("");
@@ -243,6 +244,7 @@ export default function EstrellaCrearPage() {
     if (!nombreEstrella.trim()) { setError("Dale un nombre a tu estrella."); return; }
     if (!mensaje.trim()) { setError("Escribe tu mensaje."); return; }
     if (!codigoSecreto.trim()) { setError("Define un código secreto para tu estrella."); return; }
+    if (!emailComprador.trim()) { setError("Escribe tu correo para recibir la confirmación."); return; }
     if (!terminos) { setError("Debes aceptar los términos y condiciones."); return; }
 
     setEnviando(true);
@@ -262,6 +264,7 @@ export default function EstrellaCrearPage() {
           codigo_secreto: codigoSecreto.trim().toUpperCase(),
           operacion_id,
           config: { estilo, musica, fuente, color },
+          email_comprador: emailComprador.trim(),
         }),
       });
       if (!resEstrella.ok) {
@@ -270,7 +273,7 @@ export default function EstrellaCrearPage() {
       }
       const { id: estrella_id } = await resEstrella.json();
 
-      // 2. Iniciar el pago en Webpay
+      // 2. Iniciar el pago en Mercado Pago
       const resPago = await fetch("/api/pago/iniciar-estrella", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -280,19 +283,10 @@ export default function EstrellaCrearPage() {
         const errData = await resPago.json().catch(() => ({}));
         throw new Error(`iniciar_pago: ${resPago.status} — ${JSON.stringify(errData)}`);
       }
-      const { url, token } = await resPago.json();
+      const { url } = await resPago.json();
 
-      // 3. Redirigir a Webpay (formulario POST requerido por Transbank)
-      const form = document.createElement("form");
-      form.method = "POST";
-      form.action = url;
-      const input = document.createElement("input");
-      input.type = "hidden";
-      input.name = "token_ws";
-      input.value = token;
-      form.appendChild(input);
-      document.body.appendChild(form);
-      form.submit();
+      // 3. Redirigir al checkout de Mercado Pago
+      window.location.href = url;
     } catch (err) {
       console.error("[crear estrella]", err);
       setError("No se pudo iniciar el pago. Intenta de nuevo.");
@@ -303,7 +297,7 @@ export default function EstrellaCrearPage() {
   const estiloActual = ESTILOS_ESTRELLA[estilo];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pt-16">
       {showPreview && (
         <ModalVistaPrevia
           estilo={estilo} fuente={fuente} color={color}
@@ -490,6 +484,18 @@ export default function EstrellaCrearPage() {
 
           <div>
             <label className="mb-1.5 block text-sm font-medium text-foreground">
+              Tu correo <span className="text-destructive">*</span>
+            </label>
+            <Input
+              type="email"
+              placeholder="Para enviarte la confirmación de pago"
+              value={emailComprador}
+              onChange={(e) => setEmailComprador(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-foreground">
               Nombre de la estrella <span className="text-destructive">*</span>
             </label>
             <Input
@@ -614,7 +620,7 @@ export default function EstrellaCrearPage() {
           <div>
             <p className="text-sm text-muted-foreground">Precio</p>
             <p className="text-2xl font-bold text-foreground">
-              $1.990 <span className="text-sm font-normal text-muted-foreground">CLP</span>
+              $2.990 <span className="text-sm font-normal text-muted-foreground">CLP</span>
             </p>
           </div>
           <Button onClick={crear} disabled={enviando || !terminos} size="lg">

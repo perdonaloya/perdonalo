@@ -23,12 +23,12 @@ const pasos = [
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pt-16">
       <Navbar>
         {/* <Button variant="ghost" asChild><Link href="/explorar">Ver tiendas</Link></Button> */}
-        <Button variant="ghost" asChild><Link href="/carta">💝 Carta</Link></Button>
-        <Button variant="ghost" asChild><Link href="/estrella">✨ Estrella</Link></Button>
-        <Button asChild><Link href="/recomiendame">La cagué</Link></Button>
+        <Button variant="ghost" data-variant="ghost" asChild><Link href="/carta">💝 Carta</Link></Button>
+        <Button variant="ghost" data-variant="ghost" asChild><Link href="/estrella">✨ Estrella</Link></Button>
+        <Button data-variant="default" asChild><Link href="/recomiendame">La cagué</Link></Button>
       </Navbar>
 
       {/* Hero */}
@@ -126,10 +126,10 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t border-border px-6 py-8 text-center text-sm text-muted-foreground space-y-3">
-        <p>perdónalo.cl — Chile · 2026</p>
+        <p>perdonaloya.cl — Chile · 2026</p>
         {/* <p>
           <Link href="/para-tiendas" className="hover:text-foreground transition-colors underline underline-offset-4">
-            ¿Tienes una tienda? Únete a perdónalo.cl →
+            ¿Tienes una tienda? Únete a perdonaloya.cl →
           </Link>
         </p> */}
         <div className="flex justify-center gap-4 text-xs">

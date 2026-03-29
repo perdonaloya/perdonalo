@@ -158,7 +158,7 @@ export default function AdminPage() {
       {/* Header */}
       <div className="border-b border-border bg-white px-6 py-4">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <h1 className="text-lg font-bold text-foreground">Panel Admin · perdónalo.cl</h1>
+          <h1 className="text-lg font-bold text-foreground">Panel Admin · perdonaloya.cl</h1>
           <button
             onClick={() => { sessionStorage.removeItem("admin_secret"); setAutenticado(false); }}
             className="text-sm text-muted-foreground hover:text-foreground"

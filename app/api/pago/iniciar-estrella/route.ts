@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { webpayTx, PRECIO_ESTRELLA } from "@/lib/webpay";
+import { Preference } from "mercadopago";
+import { mp, isSandbox, PRECIO_ESTRELLA } from "@/lib/mercadopago";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { registrarLog, generarOperacionId } from "@/lib/logger";
 
@@ -49,37 +50,54 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Esta estrella ya fue pagada" }, { status: 400 });
   }
 
-  const buyOrder = estrella_id.replace(/-/g, "").slice(0, 26);
-  const sessionId = operacion_id.replace(/-/g, "").slice(0, 61);
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
-  const returnUrl = `${baseUrl}/api/pago/confirmar-estrella`;
 
   await registrarLog({
     operacion_id,
     tipo: "pago_estrella",
     evento: "ejecutando",
-    mensaje: `Creando transacción Webpay para estrella ${estrella_id} — monto: $${PRECIO_ESTRELLA} CLP`,
+    mensaje: `Creando preferencia Mercado Pago para estrella ${estrella_id} — monto: $${PRECIO_ESTRELLA} CLP`,
     referencia_id: estrella_id,
     ip,
-    datos: { estrella_id, monto: PRECIO_ESTRELLA, buyOrder },
+    datos: { estrella_id, monto: PRECIO_ESTRELLA },
   });
 
   try {
-    const response = await webpayTx.create(buyOrder, sessionId, PRECIO_ESTRELLA, returnUrl);
+    const preference = new Preference(mp);
+    const response = await preference.create({
+      body: {
+        items: [
+          {
+            id: estrella_id,
+            title: "Estrella Dedicada — perdonaloya.cl",
+            quantity: 1,
+            unit_price: PRECIO_ESTRELLA,
+            currency_id: "CLP",
+          },
+        ],
+        external_reference: estrella_id,
+        back_urls: {
+          success: `${baseUrl}/api/pago/confirmar-estrella`,
+          failure: `${baseUrl}/estrella/pago-fallido`,
+          pending: `${baseUrl}/estrella/pago-fallido`,
+        },
+      },
+    });
 
     await supabaseAdmin
       .from("estrellas")
-      .update({ operacion_id, buy_order: buyOrder })
+      .update({ operacion_id })
       .eq("id", estrella_id);
 
-    return NextResponse.json({ url: response.url, token: response.token });
+    const url = isSandbox ? response.sandbox_init_point : response.init_point;
+    return NextResponse.json({ url });
   } catch (err) {
     const motivo = err instanceof Error ? err.message : "Error desconocido";
     await registrarLog({
       operacion_id,
       tipo: "pago_estrella",
       evento: "fallido",
-      mensaje: `Error al crear transacción Webpay para estrella ${estrella_id} — ${motivo}`,
+      mensaje: `Error al crear preferencia MP para estrella ${estrella_id} — ${motivo}`,
       referencia_id: estrella_id,
       ip,
       datos: { motivo },

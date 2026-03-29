@@ -2,7 +2,7 @@ import { Navbar } from "@/components/Navbar";
 
 export default function TerminosPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pt-16">
       <Navbar maxWidth="max-w-2xl" />
 
       <div className="mx-auto max-w-2xl px-6 py-12 space-y-8 text-sm text-foreground leading-relaxed">
@@ -13,12 +13,12 @@ export default function TerminosPage() {
 
         <section className="space-y-2">
           <h2 className="font-semibold text-base">1. Descripción del servicio</h2>
-          <p>perdónalo.cl es un directorio digital de tiendas de regalos en Santiago de Chile y una plataforma para enviar regalos digitales animados personalizados. No somos intermediarios en las transacciones entre usuarios y tiendas.</p>
+          <p>perdonaloya.cl es un directorio digital de tiendas de regalos en Santiago de Chile y una plataforma para enviar regalos digitales animados personalizados. No somos intermediarios en las transacciones entre usuarios y tiendas.</p>
         </section>
 
         <section className="space-y-2">
           <h2 className="font-semibold text-base">2. Uso del sitio</h2>
-          <p>Al usar perdónalo.cl aceptas no utilizar el sitio para fines ilícitos, no reproducir el contenido sin autorización y no intentar vulnerar la seguridad de la plataforma.</p>
+          <p>Al usar perdonaloya.cl aceptas no utilizar el sitio para fines ilícitos, no reproducir el contenido sin autorización y no intentar vulnerar la seguridad de la plataforma.</p>
         </section>
 
         <section className="space-y-2">
@@ -28,12 +28,12 @@ export default function TerminosPage() {
 
         <section className="space-y-2">
           <h2 className="font-semibold text-base">4. Tiendas registradas</h2>
-          <p>Las tiendas que aparecen en el directorio son revisadas manualmente antes de ser publicadas. perdónalo.cl no garantiza la disponibilidad, precios ni calidad de los productos ofrecidos por cada tienda. La relación comercial es directamente entre el usuario y la tienda.</p>
+          <p>Las tiendas que aparecen en el directorio son revisadas manualmente antes de ser publicadas. perdonaloya.cl no garantiza la disponibilidad, precios ni calidad de los productos ofrecidos por cada tienda. La relación comercial es directamente entre el usuario y la tienda.</p>
         </section>
 
         <section className="space-y-2">
           <h2 className="font-semibold text-base">5. Propiedad intelectual</h2>
-          <p>El diseño, nombre, logo y animaciones de perdónalo.cl son propiedad de sus creadores. Los mensajes personales escritos por los usuarios son de su exclusiva autoría.</p>
+          <p>El diseño, nombre, logo y animaciones de perdonaloya.cl son propiedad de sus creadores. Los mensajes personales escritos por los usuarios son de su exclusiva autoría.</p>
         </section>
 
         <section className="space-y-2">

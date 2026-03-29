@@ -1,63 +1,84 @@
 import { NextRequest, NextResponse } from "next/server";
-import { webpayTx } from "@/lib/webpay";
+import { Payment } from "mercadopago";
+import { mp } from "@/lib/mercadopago";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { registrarLog, generarOperacionId } from "@/lib/logger";
+import { Resend } from "resend";
 
-async function procesarConfirmacion(req: NextRequest) {
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+export async function GET(req: NextRequest) {
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
     req.headers.get("x-real-ip") ??
     "desconocida";
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+  const { searchParams } = new URL(req.url);
 
-  let token: string | null = new URL(req.url).searchParams.get("token_ws");
-  if (!token && req.method === "POST") {
-    const body = await req.formData();
-    token = body.get("token_ws") as string | null;
-  }
+  const payment_id = searchParams.get("payment_id") ?? searchParams.get("collection_id");
+  const estrella_id = searchParams.get("external_reference");
 
-  if (!token) {
+  // Usuario canceló o volvió sin pagar
+  if (!payment_id || !estrella_id) {
     return NextResponse.redirect(new URL("/estrella/pago-cancelado", baseUrl));
   }
 
-  let estrella_id: string | null = null;
   let operacion_id = generarOperacionId();
 
   try {
-    const response = await webpayTx.commit(token);
-    const buyOrder = response.buy_order;
-
     const { data: estrella } = await supabaseAdmin
       .from("estrellas")
-      .select("id, operacion_id")
-      .eq("buy_order", buyOrder)
+      .select("id, operacion_id, email_comprador, para, nombre_estrella")
+      .eq("id", estrella_id)
       .single();
 
-    estrella_id = estrella?.id ?? null;
     if (estrella?.operacion_id) operacion_id = estrella.operacion_id;
 
-    if (response.status === "AUTHORIZED" && response.response_code === 0) {
+    // Verificar el pago en MP (no confiar solo en los query params)
+    const payment = new Payment(mp);
+    const paymentData = await payment.get({ id: Number(payment_id) });
+
+    if (paymentData.status === "approved") {
       await supabaseAdmin
         .from("estrellas")
         .update({ pagada: true })
-        .eq("buy_order", buyOrder);
+        .eq("id", estrella_id);
 
       await registrarLog({
         operacion_id,
         tipo: "pago_estrella",
         evento: "exito",
         mensaje: `Pago aprobado — estrella ${estrella_id} pagada exitosamente desde IP ${ip}`,
-        referencia_id: estrella_id ?? undefined,
+        referencia_id: estrella_id,
         ip,
         datos: {
           estrella_id,
-          monto: response.amount,
-          payment_type: response.payment_type_code,
-          installments: response.installments_number,
-          card_last_four: response.card_detail?.card_number,
+          payment_id,
+          monto: paymentData.transaction_amount,
+          payment_method: paymentData.payment_method_id,
         },
       });
+
+      if (estrella?.email_comprador) {
+        const link = `${baseUrl}/estrella/${estrella_id}`;
+        await resend.emails.send({
+          from: "perdonaloya.cl <noreply@perdonaloya.cl>",
+          to: estrella.email_comprador,
+          subject: "Tu estrella dedicada está lista ✨",
+          html: `
+            <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#0a0a2e;color:#fff;">
+              <h1 style="font-size:24px;font-weight:700;margin-bottom:8px;">¡Tu estrella está lista! ✨</h1>
+              <p style="color:#aaa;margin-bottom:8px;">La estrella <strong>${estrella.nombre_estrella}</strong> para <strong>${estrella.para}</strong> ya fue pagada.</p>
+              <p style="color:#aaa;margin-bottom:24px;">Comparte el link junto al código secreto para que pueda verla.</p>
+              <a href="${link}" style="display:inline-block;background:#7c3aed;color:#fff;font-weight:600;padding:14px 28px;border-radius:999px;text-decoration:none;margin-bottom:24px;">Ver estrella →</a>
+              <p style="color:#666;font-size:13px;">O copia este link: ${link}</p>
+              <hr style="border:none;border-top:1px solid #222;margin:24px 0;" />
+              <p style="color:#444;font-size:12px;">perdonaloya.cl — regalos digitales con corazón</p>
+            </div>
+          `,
+        }).catch(() => null);
+      }
 
       return NextResponse.redirect(new URL(`/estrella/${estrella_id}`, baseUrl));
     } else {
@@ -65,10 +86,10 @@ async function procesarConfirmacion(req: NextRequest) {
         operacion_id,
         tipo: "pago_estrella",
         evento: "fallido",
-        mensaje: `Pago rechazado — estrella ${estrella_id} — código: ${response.response_code}`,
-        referencia_id: estrella_id ?? undefined,
+        mensaje: `Pago no aprobado — estrella ${estrella_id} — estado: ${paymentData.status}`,
+        referencia_id: estrella_id,
         ip,
-        datos: { response_code: response.response_code, status: response.status },
+        datos: { status: paymentData.status, payment_id },
       });
 
       return NextResponse.redirect(
@@ -76,9 +97,14 @@ async function procesarConfirmacion(req: NextRequest) {
       );
     }
   } catch (err) {
-    const motivo = err instanceof Error ? err.message : "Error desconocido";
+    const motivo =
+      err instanceof Error
+        ? err.message
+        : typeof err === "object" && err !== null
+        ? JSON.stringify(err)
+        : String(err);
     await registrarLog({
-      operacion_id: generarOperacionId(),
+      operacion_id,
       tipo: "pago_estrella",
       evento: "fallido",
       mensaje: `Error al confirmar pago desde IP ${ip} — ${motivo}`,
@@ -89,12 +115,4 @@ async function procesarConfirmacion(req: NextRequest) {
 
     return NextResponse.redirect(new URL("/estrella/pago-fallido", baseUrl));
   }
-}
-
-export async function GET(req: NextRequest) {
-  return procesarConfirmacion(req);
-}
-
-export async function POST(req: NextRequest) {
-  return procesarConfirmacion(req);
 }

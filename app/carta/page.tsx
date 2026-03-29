@@ -70,6 +70,7 @@ export default function CartaPage() {
   const [para, setPara] = useState("");
   const [de, setDe] = useState("");
   const [mensaje, setMensaje] = useState("");
+  const [emailComprador, setEmailComprador] = useState("");
   const [terminos, setTerminos] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState("");
@@ -109,6 +110,7 @@ export default function CartaPage() {
     if (!para.trim()) { setError("Escribe el nombre de quien lo recibe."); return; }
     if (!de.trim()) { setError("Escribe tu nombre."); return; }
     if (!mensaje.trim()) { setError("Escribe tu mensaje."); return; }
+    if (!emailComprador.trim()) { setError("Escribe tu correo para recibir la confirmación."); return; }
     if (!terminos) { setError("Debes aceptar los términos y condiciones."); return; }
 
     setEnviando(true);
@@ -120,31 +122,22 @@ export default function CartaPage() {
       const resCarta = await fetch("/api/cartas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ para, de, mensaje, tema, operacion_id }),
+        body: JSON.stringify({ para, de, mensaje, tema, operacion_id, email_comprador: emailComprador.trim() }),
       });
       if (!resCarta.ok) throw new Error();
       const { id: carta_id } = await resCarta.json();
 
-      // 2. Iniciar el pago en Webpay
+      // 2. Iniciar el pago en Mercado Pago
       const resPago = await fetch("/api/pago/iniciar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ carta_id, operacion_id }),
       });
       if (!resPago.ok) throw new Error();
-      const { url, token } = await resPago.json();
+      const { url } = await resPago.json();
 
-      // 3. Redirigir a Webpay (formulario POST requerido por Transbank)
-      const form = document.createElement("form");
-      form.method = "POST";
-      form.action = url;
-      const input = document.createElement("input");
-      input.type = "hidden";
-      input.name = "token_ws";
-      input.value = token;
-      form.appendChild(input);
-      document.body.appendChild(form);
-      form.submit();
+      // 3. Redirigir al checkout de Mercado Pago
+      window.location.href = url;
     } catch {
       setError("No se pudo iniciar el pago. Intenta de nuevo.");
       setEnviando(false);
@@ -161,7 +154,7 @@ export default function CartaPage() {
         />
       )}
 
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-white pt-16">
         <Navbar maxWidth="max-w-2xl" />
 
         <div className="mx-auto max-w-2xl px-6 pt-4">
@@ -214,6 +207,12 @@ export default function CartaPage() {
                 De parte de <span className="text-destructive">*</span>
               </label>
               <Input placeholder="Tu nombre" value={de} onChange={(e) => setDe(e.target.value)} />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-foreground">
+                Tu correo <span className="text-destructive">*</span>
+              </label>
+              <Input type="email" placeholder="Para enviarte la confirmación de pago" value={emailComprador} onChange={(e) => setEmailComprador(e.target.value)} />
             </div>
             <div>
               <div className="mb-1.5 flex items-center justify-between">

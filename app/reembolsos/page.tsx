@@ -2,7 +2,7 @@ import { Navbar } from "@/components/Navbar";
 
 export default function ReembolsosPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pt-16">
       <Navbar maxWidth="max-w-2xl" />
 
       <div className="mx-auto max-w-2xl px-6 py-12 space-y-8 text-sm text-foreground leading-relaxed">
@@ -30,7 +30,7 @@ export default function ReembolsosPage() {
           <h2 className="font-semibold text-base">Cómo solicitar un reembolso</h2>
           <p><a href="https://wa.me/56962121964" className="underline underline-offset-4 hover:text-primary transition-colors">Escríbenos por WhatsApp</a> dentro de las 48 horas siguientes al pago, indicando:</p>
           <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-            <li>El enlace de tu regalo (ej: perdonalo.cl/carta/xxx)</li>
+            <li>El enlace de tu regalo (ej: perdonaloya.cl/carta/xxx)</li>
             <li>El motivo de la solicitud</li>
           </ul>
           <p>Respondemos en menos de 24 horas hábiles.</p>
@@ -38,7 +38,7 @@ export default function ReembolsosPage() {
 
         <section className="space-y-2">
           <h2 className="font-semibold text-base">Directorio de tiendas</h2>
-          <p>perdónalo.cl es un directorio gratuito para los usuarios. No cobramos por explorar tiendas ni por ver sus perfiles, por lo que no aplica política de reembolso en esa sección.</p>
+          <p>perdonaloya.cl es un directorio gratuito para los usuarios. No cobramos por explorar tiendas ni por ver sus perfiles, por lo que no aplica política de reembolso en esa sección.</p>
         </section>
       </div>
     </div>

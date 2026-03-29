@@ -219,7 +219,7 @@ function EstrellaCentral({ dim, brightening, estilo }: { dim: boolean; brighteni
 function ShareButton({ id, para }: { id: string; para: string }) {
   const [abierto, setAbierto] = useState(false);
   const [copiado, setCopiado] = useState(false);
-  const url = typeof window !== "undefined" ? window.location.href : `https://perdonalo.cl/estrella/${id}`;
+  const url = typeof window !== "undefined" ? window.location.href : `https://perdonaloya.cl/estrella/${id}`;
   const texto = encodeURIComponent(`Alguien dedicó una estrella para ${para} ✨ ${url}`);
   const copiar = async () => {
     await navigator.clipboard.writeText(url);

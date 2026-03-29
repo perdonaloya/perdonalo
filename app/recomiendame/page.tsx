@@ -76,7 +76,7 @@ export default function RecomiendamePage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pt-16">
       <Navbar>
         {/* <Button variant="ghost" asChild><Link href="/explorar">Ver tiendas</Link></Button> */}
         <Button variant="ghost" asChild><Link href="/carta">💝 Carta</Link></Button>

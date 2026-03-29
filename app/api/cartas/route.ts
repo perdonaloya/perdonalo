@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     "desconocida";
 
   const body = await req.json();
-  const { para, de, mensaje, tema, operacion_id: operacionIdExterno } = body;
+  const { para, de, mensaje, tema, email_comprador, operacion_id: operacionIdExterno } = body;
   const operacion_id = (operacionIdExterno as string | undefined) ?? generarOperacionId();
 
   await registrarLog({
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
 
   const { data, error } = await supabaseAdmin
     .from("cartas")
-    .insert({ para: para.trim(), de: de.trim(), mensaje: mensaje.trim(), tema })
+    .insert({ para: para.trim(), de: de.trim(), mensaje: mensaje.trim(), tema, email_comprador: email_comprador?.trim() || null })
     .select("id")
     .single();
 

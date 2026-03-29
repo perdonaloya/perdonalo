@@ -13,7 +13,7 @@ async function geocodificar(direccion: string, comuna: string): Promise<{ lat: n
     const query = encodeURIComponent(`${direccion}, ${comuna}, Santiago, Chile`);
     const res = await fetch(
       `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`,
-      { headers: { "Accept-Language": "es", "User-Agent": "perdonalo.cl" } }
+      { headers: { "Accept-Language": "es", "User-Agent": "perdonaloya.cl" } }
     );
     const data = await res.json();
     if (data[0]) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
@@ -28,23 +28,23 @@ async function enviarEmailAprobacion(solicitud: {
 }, token: string) {
   if (!solicitud.email_contacto) return;
 
-  const editUrl = `https://perdonalo.cl/editar-tienda/${token}`;
+  const editUrl = `https://perdonaloya.cl/editar-tienda/${token}`;
 
   await resend.emails.send({
-    from: "perdónalo.cl <onboarding@resend.dev>",
+    from: "perdonaloya.cl <onboarding@resend.dev>",
     to: solicitud.email_contacto,
-    subject: "¡Tu tienda fue aprobada en perdónalo.cl! 🎉",
+    subject: "¡Tu tienda fue aprobada en perdonaloya.cl! 🎉",
     html: `
       <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 24px;color:#1a1a1a">
         <h1 style="font-size:28px;font-weight:700;color:#e11d48;margin-bottom:8px">
-          ¡Bienvenido/a a perdónalo.cl! 🎉
+          ¡Bienvenido/a a perdonaloya.cl! 🎉
         </h1>
         <p style="font-size:16px;color:#444;margin-bottom:24px">
           Hola ${solicitud.nombre_contacto ?? ""},
         </p>
         <p style="font-size:15px;color:#444;line-height:1.6;margin-bottom:16px">
           Nos alegra informarte que <strong>${solicitud.nombre}</strong> ya está activa en
-          <strong>perdónalo.cl</strong> y visible para miles de personas que buscan el regalo perfecto.
+          <strong>perdonaloya.cl</strong> y visible para miles de personas que buscan el regalo perfecto.
         </p>
         <p style="font-size:15px;color:#444;line-height:1.6;margin-bottom:24px">
           Por ahora tu perfil está en plan gratuito. Pronto te contactaremos para contarte
@@ -60,13 +60,13 @@ async function enviarEmailAprobacion(solicitud: {
         <p style="font-size:13px;color:#999;margin-bottom:24px">
           Guarda este enlace, es tuyo y exclusivo. Con él puedes actualizar tu descripción, contacto, horario y más en cualquier momento.
         </p>
-        <a href="https://perdonalo.cl/explorar"
+        <a href="https://perdonaloya.cl/explorar"
           style="display:inline-block;background:#e11d48;color:white;font-weight:600;padding:12px 24px;border-radius:99px;text-decoration:none;font-size:15px">
-          Ver perdónalo.cl →
+          Ver perdonaloya.cl →
         </a>
         <p style="font-size:13px;color:#999;margin-top:40px">
           Cualquier duda responde este correo. ¡Gracias por ser parte!<br/>
-          — El equipo de perdónalo.cl
+          — El equipo de perdonaloya.cl
         </p>
       </div>
     `,

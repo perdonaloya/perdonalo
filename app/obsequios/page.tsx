@@ -30,7 +30,7 @@ export default function ObsequiosPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pt-16">
       <Navbar>
         <Button asChild><Link href="/recomiendame">¿La cagaste?</Link></Button>
       </Navbar>

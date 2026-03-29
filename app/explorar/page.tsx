@@ -172,7 +172,7 @@ export default function ExplorarPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pt-16">
       <Navbar>
         <Button asChild><Link href="/recomiendame">Ayúdame a elegir ✨</Link></Button>
       </Navbar>

@@ -77,7 +77,7 @@ export default function TiendaPage({ params }: { params: Promise<{ id: string }>
     : 0;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pt-16">
       <Navbar maxWidth="max-w-3xl">
         <Button asChild><Link href="/recomiendame">Ayúdame a elegir ✨</Link></Button>
       </Navbar>

@@ -2,7 +2,7 @@ import { Navbar } from "@/components/Navbar";
 
 export default function PrivacidadPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pt-16">
       <Navbar maxWidth="max-w-2xl" />
 
       <div className="mx-auto max-w-2xl px-6 py-12 space-y-8 text-sm text-foreground leading-relaxed">
@@ -38,7 +38,7 @@ export default function PrivacidadPage() {
 
         <section className="space-y-2">
           <h2 className="font-semibold text-base">4. Seguridad</h2>
-          <p>Almacenamos los datos en servidores seguros (Supabase). El acceso está protegido y limitado al equipo de perdónalo.cl.</p>
+          <p>Almacenamos los datos en servidores seguros (Supabase). El acceso está protegido y limitado al equipo de perdonaloya.cl.</p>
         </section>
 
         <section className="space-y-2">

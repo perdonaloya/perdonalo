@@ -14,7 +14,7 @@ function ShareButton({ id }: { id: string }) {
   const [abierto, setAbierto] = useState(false);
   const [copiado, setCopiado] = useState(false);
   const [capturando, setCapturando] = useState(false);
-  const url = typeof window !== "undefined" ? window.location.href : `https://perdonalo.cl/carta/${id}`;
+  const url = typeof window !== "undefined" ? window.location.href : `https://perdonaloya.cl/carta/${id}`;
   const texto = encodeURIComponent(`Te envié un regalo especial 💝 ${url}`);
 
   const copiar = async () => {
@@ -71,22 +71,22 @@ function ShareButton({ id }: { id: string }) {
       // marca
       ctx.font = `${Math.round(btnFs * 0.75)}px sans-serif`;
       ctx.fillStyle = "rgba(255,255,255,0.60)";
-      ctx.fillText("perdonalo.cl", fw / 2, fh - Math.round(fh * 0.018));
+      ctx.fillText("perdonaloya.cl", fw / 2, fh - Math.round(fh * 0.018));
 
       canvas.toBlob(async (blob) => {
         if (!blob) return;
-        const file = new File([blob], "perdonalo.jpg", { type: "image/jpeg" });
+        const file = new File([blob], "perdonaloya.jpg", { type: "image/jpeg" });
 
         if (navigator.canShare?.({ files: [file] })) {
           await navigator.share({
             files: [file],
             title: "Un regalo especial para ti 💝",
-            text: `✨ Ve la animación completa en perdonalo.cl 👉 ${url}`,
+            text: `✨ Ve la animación completa en perdonaloya.cl 👉 ${url}`,
           });
         } else {
           const a = document.createElement("a");
           a.href = URL.createObjectURL(blob);
-          a.download = "perdonalo.jpg";
+          a.download = "perdonaloya.jpg";
           a.click();
         }
       }, "image/jpeg", 0.92);

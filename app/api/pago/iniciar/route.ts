@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { webpayTx, PRECIO_CARTA } from "@/lib/webpay";
+import { Preference } from "mercadopago";
+import { mp, isSandbox, PRECIO_CARTA } from "@/lib/mercadopago";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { registrarLog, generarOperacionId } from "@/lib/logger";
 
@@ -49,37 +50,54 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Esta carta ya fue pagada" }, { status: 400 });
   }
 
-  const buyOrder = carta_id.replace(/-/g, "").slice(0, 26);
-  const sessionId = operacion_id.replace(/-/g, "").slice(0, 61);
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
-  const returnUrl = `${baseUrl}/api/pago/confirmar`;
 
   await registrarLog({
     operacion_id,
     tipo: "pago_carta",
     evento: "ejecutando",
-    mensaje: `Creando transacción Webpay para carta ${carta_id} — monto: $${PRECIO_CARTA} CLP`,
+    mensaje: `Creando preferencia Mercado Pago para carta ${carta_id} — monto: $${PRECIO_CARTA} CLP`,
     referencia_id: carta_id,
     ip,
-    datos: { carta_id, monto: PRECIO_CARTA, buyOrder },
+    datos: { carta_id, monto: PRECIO_CARTA },
   });
 
   try {
-    const response = await webpayTx.create(buyOrder, sessionId, PRECIO_CARTA, returnUrl);
+    const preference = new Preference(mp);
+    const response = await preference.create({
+      body: {
+        items: [
+          {
+            id: carta_id,
+            title: "Carta Digital — perdonaloya.cl",
+            quantity: 1,
+            unit_price: PRECIO_CARTA,
+            currency_id: "CLP",
+          },
+        ],
+        external_reference: carta_id,
+        back_urls: {
+          success: `${baseUrl}/api/pago/confirmar`,
+          failure: `${baseUrl}/carta/pago-fallido`,
+          pending: `${baseUrl}/carta/pago-fallido`,
+        },
+      },
+    });
 
     await supabaseAdmin
       .from("cartas")
-      .update({ operacion_id, buy_order: buyOrder })
+      .update({ operacion_id })
       .eq("id", carta_id);
 
-    return NextResponse.json({ url: response.url, token: response.token });
+    const url = isSandbox ? response.sandbox_init_point : response.init_point;
+    return NextResponse.json({ url });
   } catch (err) {
     const motivo = err instanceof Error ? err.message : "Error desconocido";
     await registrarLog({
       operacion_id,
       tipo: "pago_carta",
       evento: "fallido",
-      mensaje: `Error al crear transacción Webpay para carta ${carta_id} — ${motivo}`,
+      mensaje: `Error al crear preferencia MP para carta ${carta_id} — ${motivo}`,
       referencia_id: carta_id,
       ip,
       datos: { motivo },

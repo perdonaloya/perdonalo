@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "perdónalo.cl — Regalos para reconciliarte",
+  title: "perdonaloya.cl — Regalos para reconciliarte",
   description: "Encuentra el regalo perfecto para pedir perdón o sorprender a alguien especial. Floristerías, chocolaterías y más en Chile.",
 };
 

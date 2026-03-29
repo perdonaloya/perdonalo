@@ -111,13 +111,13 @@ export default function ParaTiendasPage() {
 
   if (enviado) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-white pt-16">
         <Navbar maxWidth="max-w-3xl" />
         <div className="mx-auto flex max-w-3xl flex-col items-center px-6 py-24 text-center">
           <span className="mb-4 text-5xl">🎉</span>
           <h1 className="mb-3 text-2xl font-bold text-foreground">¡Solicitud enviada!</h1>
           <p className="mb-8 text-muted-foreground">
-            Revisaremos tu información y te contactaremos pronto. Gracias por querer ser parte de perdónalo.cl.
+            Revisaremos tu información y te contactaremos pronto. Gracias por querer ser parte de perdonaloya.cl.
           </p>
           <Button asChild variant="outline">
             <Link href="/">Volver al inicio</Link>
@@ -128,7 +128,7 @@ export default function ParaTiendasPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pt-16">
       <Navbar maxWidth="max-w-3xl" />
 
       <div className="mx-auto max-w-3xl px-6 pt-4">
@@ -145,7 +145,7 @@ export default function ParaTiendasPage() {
           </h1>
           <p className="text-muted-foreground">
             Miles de personas buscan el regalo perfecto para reconciliarse o sorprender a alguien especial.
-            Únete a perdónalo.cl y aparece cuando más te necesitan.
+            Únete a perdonaloya.cl y aparece cuando más te necesitan.
           </p>
         </div>
 

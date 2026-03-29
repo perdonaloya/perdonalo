@@ -48,6 +48,7 @@ export interface Carta {
   mensaje: string;
   tema: string;
   pagada: boolean;
+  email_comprador?: string;
   created_at: string;
 }
 
