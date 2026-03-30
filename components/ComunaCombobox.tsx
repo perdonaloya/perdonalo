@@ -10,6 +10,7 @@ interface Props {
 
 }
 
+
 export function ComunaCombobox({ value, onChange, placeholder = "📍 Todas las comunas" }: Props) {
   const [abierto, setAbierto] = useState(false);
   const [busqueda, setBusqueda] = useState("");
