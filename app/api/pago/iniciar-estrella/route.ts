@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
 
   const { data: estrella, error: estrellaError } = await supabaseAdmin
     .from("estrellas")
-    .select("id, pagada")
+    .select("id, pagada, email_comprador")
     .eq("id", estrella_id)
     .single();
 
@@ -76,6 +76,7 @@ export async function POST(req: NextRequest) {
           },
         ],
         external_reference: estrella_id,
+        payer: estrella.email_comprador ? { email: estrella.email_comprador } : undefined,
         back_urls: {
           success: `${baseUrl}/api/pago/confirmar-estrella`,
           failure: `${baseUrl}/estrella/pago-fallido`,

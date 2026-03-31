@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
 
   const { data: carta, error: cartaError } = await supabaseAdmin
     .from("cartas")
-    .select("id, pagada")
+    .select("id, pagada, email_comprador")
     .eq("id", carta_id)
     .single();
 
@@ -76,6 +76,7 @@ export async function POST(req: NextRequest) {
           },
         ],
         external_reference: carta_id,
+        payer: carta.email_comprador ? { email: carta.email_comprador } : undefined,
         back_urls: {
           success: `${baseUrl}/api/pago/confirmar`,
           failure: `${baseUrl}/carta/pago-fallido`,
