@@ -238,13 +238,20 @@ export default function EstrellaCrearPage() {
     setCodigoSecreto(`${palabra}${num}`);
   };
 
+  const soloLetras = (valor: string) => /^[a-záéíóúüñA-ZÁÉÍÓÚÜÑ\s]+$/.test(valor.trim());
+  const emailValido = (valor: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(valor.trim());
+
   const crear = async () => {
     if (!para.trim()) { setError("Escribe el nombre de quien lo recibe."); return; }
+    if (!soloLetras(para)) { setError("El nombre del destinatario solo puede contener letras."); return; }
     if (!de.trim()) { setError("Escribe tu nombre."); return; }
+    if (!soloLetras(de)) { setError("Tu nombre solo puede contener letras."); return; }
     if (!nombreEstrella.trim()) { setError("Dale un nombre a tu estrella."); return; }
+    if (!soloLetras(nombreEstrella)) { setError("El nombre de la estrella solo puede contener letras."); return; }
     if (!mensaje.trim()) { setError("Escribe tu mensaje."); return; }
     if (!codigoSecreto.trim()) { setError("Define un código secreto para tu estrella."); return; }
     if (!emailComprador.trim()) { setError("Escribe tu correo para recibir la confirmación."); return; }
+    if (!emailValido(emailComprador)) { setError("El correo no tiene un formato válido."); return; }
     if (!terminos) { setError("Debes aceptar los términos y condiciones."); return; }
 
     setEnviando(true);
@@ -467,7 +474,7 @@ export default function EstrellaCrearPage() {
             <Input
               placeholder="Nombre de quien la recibe"
               value={para}
-              onChange={(e) => setPara(e.target.value)}
+              onChange={(e) => setPara(e.target.value.replace(/[^a-záéíóúüñA-ZÁÉÍÓÚÜÑ\s]/g, ""))}
             />
           </div>
 
@@ -478,7 +485,7 @@ export default function EstrellaCrearPage() {
             <Input
               placeholder="Tu nombre"
               value={de}
-              onChange={(e) => setDe(e.target.value)}
+              onChange={(e) => setDe(e.target.value.replace(/[^a-záéíóúüñA-ZÁÉÍÓÚÜÑ\s]/g, ""))}
             />
           </div>
 
@@ -501,7 +508,7 @@ export default function EstrellaCrearPage() {
             <Input
               placeholder="Ej: Estrella Camila, Alpha Valentina..."
               value={nombreEstrella}
-              onChange={(e) => setNombreEstrella(e.target.value.slice(0, 50))}
+              onChange={(e) => setNombreEstrella(e.target.value.replace(/[^a-záéíóúüñA-ZÁÉÍÓÚÜÑ\s]/g, "").slice(0, 50))}
             />
             <p className="mt-1 text-right text-xs text-muted-foreground">{nombreEstrella.length}/50</p>
           </div>

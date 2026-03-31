@@ -105,12 +105,18 @@ export default function CartaPage() {
     }
   };
 
+  const soloLetras = (valor: string) => /^[a-záéíóúüñA-ZÁÉÍÓÚÜÑ\s]+$/.test(valor.trim());
+  const emailValido = (valor: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(valor.trim());
+
   const crear = async () => {
     if (!tema) { setError("Elige un diseño para tu regalo."); return; }
     if (!para.trim()) { setError("Escribe el nombre de quien lo recibe."); return; }
+    if (!soloLetras(para)) { setError("El nombre del destinatario solo puede contener letras."); return; }
     if (!de.trim()) { setError("Escribe tu nombre."); return; }
+    if (!soloLetras(de)) { setError("Tu nombre solo puede contener letras."); return; }
     if (!mensaje.trim()) { setError("Escribe tu mensaje."); return; }
     if (!emailComprador.trim()) { setError("Escribe tu correo para recibir la confirmación."); return; }
+    if (!emailValido(emailComprador)) { setError("El correo no tiene un formato válido."); return; }
     if (!terminos) { setError("Debes aceptar los términos y condiciones."); return; }
 
     setEnviando(true);
@@ -200,13 +206,13 @@ export default function CartaPage() {
               <label className="mb-1.5 block text-sm font-medium text-foreground">
                 Para quién es <span className="text-destructive">*</span>
               </label>
-              <Input placeholder="Nombre de quien lo recibe" value={para} onChange={(e) => setPara(e.target.value)} />
+              <Input placeholder="Nombre de quien lo recibe" value={para} onChange={(e) => setPara(e.target.value.replace(/[^a-záéíóúüñA-ZÁÉÍÓÚÜÑ\s]/g, ""))} />
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-foreground">
                 De parte de <span className="text-destructive">*</span>
               </label>
-              <Input placeholder="Tu nombre" value={de} onChange={(e) => setDe(e.target.value)} />
+              <Input placeholder="Tu nombre" value={de} onChange={(e) => setDe(e.target.value.replace(/[^a-záéíóúüñA-ZÁÉÍÓÚÜÑ\s]/g, ""))} />
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-foreground">
