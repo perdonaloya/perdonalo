@@ -82,7 +82,6 @@ export async function POST(req: NextRequest) {
           failure: `${baseUrl}/estrella/pago-fallido`,
           pending: `${baseUrl}/estrella/pago-fallido`,
         },
-        auto_return: "approved",
         payment_methods: {
           excluded_payment_types: [],
         },
