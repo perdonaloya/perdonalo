@@ -81,6 +81,9 @@ export async function POST(req: NextRequest) {
           failure: `${baseUrl}/carta/pago-fallido`,
           pending: `${baseUrl}/carta/pago-fallido`,
         },
+        payment_methods: {
+          excluded_payment_types: [],
+        },
       },
     });
 

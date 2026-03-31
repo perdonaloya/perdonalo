@@ -79,7 +79,7 @@ export async function GET(req: NextRequest) {
         }).catch(() => null);
       }
 
-      return NextResponse.redirect(new URL(`/carta/${carta_id}`, baseUrl));
+      return NextResponse.redirect(new URL(`/carta/pago-exitoso?id=${carta_id}`, baseUrl));
     } else {
       await registrarLog({
         operacion_id,

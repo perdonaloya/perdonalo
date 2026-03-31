@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
@@ -74,6 +74,13 @@ export default function CartaPage() {
   const [terminos, setTerminos] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState("");
+  const [errores, setErrores] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const reset = () => { if (document.visibilityState === "visible") setEnviando(false); };
+    document.addEventListener("visibilitychange", reset);
+    return () => document.removeEventListener("visibilitychange", reset);
+  }, []);
 
   // Escritura guiada con IA
   const [modoGuiado, setModoGuiado] = useState(false);
@@ -109,15 +116,18 @@ export default function CartaPage() {
   const emailValido = (valor: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(valor.trim());
 
   const crear = async () => {
+    const e: Record<string, string> = {};
     if (!tema) { setError("Elige un diseño para tu regalo."); return; }
-    if (!para.trim()) { setError("Escribe el nombre de quien lo recibe."); return; }
-    if (!soloLetras(para)) { setError("El nombre del destinatario solo puede contener letras."); return; }
-    if (!de.trim()) { setError("Escribe tu nombre."); return; }
-    if (!soloLetras(de)) { setError("Tu nombre solo puede contener letras."); return; }
-    if (!mensaje.trim()) { setError("Escribe tu mensaje."); return; }
-    if (!emailComprador.trim()) { setError("Escribe tu correo para recibir la confirmación."); return; }
-    if (!emailValido(emailComprador)) { setError("El correo no tiene un formato válido."); return; }
+    if (!para.trim()) e.para = "Escribe el nombre de quien lo recibe.";
+    else if (!soloLetras(para)) e.para = "Solo puede contener letras.";
+    if (!de.trim()) e.de = "Escribe tu nombre.";
+    else if (!soloLetras(de)) e.de = "Solo puede contener letras.";
+    if (!mensaje.trim()) e.mensaje = "Escribe tu mensaje.";
+    if (!emailComprador.trim()) e.email = "Escribe tu correo.";
+    else if (!emailValido(emailComprador)) e.email = "El correo no tiene un formato válido.";
     if (!terminos) { setError("Debes aceptar los términos y condiciones."); return; }
+    if (Object.keys(e).length > 0) { setErrores(e); return; }
+    setErrores({});
 
     setEnviando(true);
     setError("");
@@ -206,19 +216,22 @@ export default function CartaPage() {
               <label className="mb-1.5 block text-sm font-medium text-foreground">
                 Para quién es <span className="text-destructive">*</span>
               </label>
-              <Input placeholder="Nombre de quien lo recibe" value={para} onChange={(e) => setPara(e.target.value.replace(/[^a-záéíóúüñA-ZÁÉÍÓÚÜÑ\s]/g, ""))} />
+              <Input placeholder="Nombre de quien lo recibe" value={para} onChange={(e) => { setPara(e.target.value.replace(/[^a-záéíóúüñA-ZÁÉÍÓÚÜÑ\s]/g, "")); setErrores(p => ({...p, para: ""})); }} />
+              {errores.para && <p className="mt-1 text-xs text-destructive">{errores.para}</p>}
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-foreground">
                 De parte de <span className="text-destructive">*</span>
               </label>
-              <Input placeholder="Tu nombre" value={de} onChange={(e) => setDe(e.target.value.replace(/[^a-záéíóúüñA-ZÁÉÍÓÚÜÑ\s]/g, ""))} />
+              <Input placeholder="Tu nombre" value={de} onChange={(e) => { setDe(e.target.value.replace(/[^a-záéíóúüñA-ZÁÉÍÓÚÜÑ\s]/g, "")); setErrores(p => ({...p, de: ""})); }} />
+              {errores.de && <p className="mt-1 text-xs text-destructive">{errores.de}</p>}
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-foreground">
                 Tu correo <span className="text-destructive">*</span>
               </label>
-              <Input type="email" placeholder="Para enviarte la confirmación de pago" value={emailComprador} onChange={(e) => setEmailComprador(e.target.value)} />
+              <Input type="email" placeholder="Para enviarte la confirmación de pago" value={emailComprador} onChange={(e) => { setEmailComprador(e.target.value); setErrores(p => ({...p, email: ""})); }} />
+              {errores.email && <p className="mt-1 text-xs text-destructive">{errores.email}</p>}
             </div>
             <div>
               <div className="mb-1.5 flex items-center justify-between">
@@ -263,6 +276,7 @@ export default function CartaPage() {
                     className="min-h-[100px] resize-none"
                   />
                   <p className="mt-1 text-right text-xs text-muted-foreground">{mensaje.length}/280</p>
+                  {errores.mensaje && <p className="mt-1 text-xs text-destructive">{errores.mensaje}</p>}
                 </>
               )}
             </div>

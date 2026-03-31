@@ -137,7 +137,7 @@ function MiniEstrellaVisual({ estilo }: { estilo: EstiloEstrella }) {
 }
 
 
-function PreviewMusica({ tipo }: { tipo: MusicaEstrella }) {
+function PreviewMusica({ tipo, onSeleccionar }: { tipo: MusicaEstrella; onSeleccionar: () => void }) {
   const [tocando, setTocando] = useState(false);
   const stopRef  = useRef<(() => void) | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -157,6 +157,7 @@ function PreviewMusica({ tipo }: { tipo: MusicaEstrella }) {
       setTocando(false);
       return;
     }
+    onSeleccionar();
     try {
       const stop = crearPreviewAudio(tipo);
       stopRef.current = stop;
@@ -194,6 +195,13 @@ export default function EstrellaCrearPage() {
   const [terminos, setTerminos] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState("");
+  const [errores, setErrores] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const reset = () => { if (document.visibilityState === "visible") setEnviando(false); };
+    document.addEventListener("visibilitychange", reset);
+    return () => document.removeEventListener("visibilitychange", reset);
+  }, []);
   const [showPreview, setShowPreview] = useState(false);
 
   // Configuración visual
@@ -242,17 +250,20 @@ export default function EstrellaCrearPage() {
   const emailValido = (valor: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(valor.trim());
 
   const crear = async () => {
-    if (!para.trim()) { setError("Escribe el nombre de quien lo recibe."); return; }
-    if (!soloLetras(para)) { setError("El nombre del destinatario solo puede contener letras."); return; }
-    if (!de.trim()) { setError("Escribe tu nombre."); return; }
-    if (!soloLetras(de)) { setError("Tu nombre solo puede contener letras."); return; }
-    if (!nombreEstrella.trim()) { setError("Dale un nombre a tu estrella."); return; }
-    if (!soloLetras(nombreEstrella)) { setError("El nombre de la estrella solo puede contener letras."); return; }
-    if (!mensaje.trim()) { setError("Escribe tu mensaje."); return; }
-    if (!codigoSecreto.trim()) { setError("Define un código secreto para tu estrella."); return; }
-    if (!emailComprador.trim()) { setError("Escribe tu correo para recibir la confirmación."); return; }
-    if (!emailValido(emailComprador)) { setError("El correo no tiene un formato válido."); return; }
+    const e: Record<string, string> = {};
+    if (!para.trim()) e.para = "Escribe el nombre de quien lo recibe.";
+    else if (!soloLetras(para)) e.para = "Solo puede contener letras.";
+    if (!de.trim()) e.de = "Escribe tu nombre.";
+    else if (!soloLetras(de)) e.de = "Solo puede contener letras.";
+    if (!nombreEstrella.trim()) e.nombreEstrella = "Dale un nombre a tu estrella.";
+    else if (!soloLetras(nombreEstrella)) e.nombreEstrella = "Solo puede contener letras.";
+    if (!mensaje.trim()) e.mensaje = "Escribe tu mensaje.";
+    if (!codigoSecreto.trim()) e.codigo = "Define un código secreto.";
+    if (!emailComprador.trim()) e.email = "Escribe tu correo.";
+    else if (!emailValido(emailComprador)) e.email = "El correo no tiene un formato válido.";
     if (!terminos) { setError("Debes aceptar los términos y condiciones."); return; }
+    if (Object.keys(e).length > 0) { setErrores(e); return; }
+    setErrores({});
 
     setEnviando(true);
     setError("");
@@ -410,7 +421,7 @@ export default function EstrellaCrearPage() {
                   <div className="text-xl mb-1">{m.emoji}</div>
                   <p className="text-xs font-medium text-foreground">{m.label}</p>
                   <p className="text-xs text-muted-foreground leading-tight mt-0.5 grow">{m.desc}</p>
-                  <PreviewMusica tipo={key} />
+                  <PreviewMusica tipo={key} onSeleccionar={() => setMusica(key)} />
                 </div>
               ))}
             </div>
@@ -474,8 +485,9 @@ export default function EstrellaCrearPage() {
             <Input
               placeholder="Nombre de quien la recibe"
               value={para}
-              onChange={(e) => setPara(e.target.value.replace(/[^a-záéíóúüñA-ZÁÉÍÓÚÜÑ\s]/g, ""))}
+              onChange={(e) => { setPara(e.target.value.replace(/[^a-záéíóúüñA-ZÁÉÍÓÚÜÑ\s]/g, "")); setErrores(p => ({...p, para: ""})); }}
             />
+            {errores.para && <p className="mt-1 text-xs text-destructive">{errores.para}</p>}
           </div>
 
           <div>
@@ -485,8 +497,9 @@ export default function EstrellaCrearPage() {
             <Input
               placeholder="Tu nombre"
               value={de}
-              onChange={(e) => setDe(e.target.value.replace(/[^a-záéíóúüñA-ZÁÉÍÓÚÜÑ\s]/g, ""))}
+              onChange={(e) => { setDe(e.target.value.replace(/[^a-záéíóúüñA-ZÁÉÍÓÚÜÑ\s]/g, "")); setErrores(p => ({...p, de: ""})); }}
             />
+            {errores.de && <p className="mt-1 text-xs text-destructive">{errores.de}</p>}
           </div>
 
           <div>
@@ -497,8 +510,9 @@ export default function EstrellaCrearPage() {
               type="email"
               placeholder="Para enviarte la confirmación de pago"
               value={emailComprador}
-              onChange={(e) => setEmailComprador(e.target.value)}
+              onChange={(e) => { setEmailComprador(e.target.value); setErrores(p => ({...p, email: ""})); }}
             />
+            {errores.email && <p className="mt-1 text-xs text-destructive">{errores.email}</p>}
           </div>
 
           <div>
@@ -508,9 +522,10 @@ export default function EstrellaCrearPage() {
             <Input
               placeholder="Ej: Estrella Camila, Alpha Valentina..."
               value={nombreEstrella}
-              onChange={(e) => setNombreEstrella(e.target.value.replace(/[^a-záéíóúüñA-ZÁÉÍÓÚÜÑ\s]/g, "").slice(0, 50))}
+              onChange={(e) => { setNombreEstrella(e.target.value.replace(/[^a-záéíóúüñA-ZÁÉÍÓÚÜÑ\s]/g, "").slice(0, 50)); setErrores(p => ({...p, nombreEstrella: ""})); }}
             />
             <p className="mt-1 text-right text-xs text-muted-foreground">{nombreEstrella.length}/50</p>
+            {errores.nombreEstrella && <p className="mt-1 text-xs text-destructive">{errores.nombreEstrella}</p>}
           </div>
 
           <div>
@@ -568,7 +583,7 @@ export default function EstrellaCrearPage() {
               <Input
                 placeholder="Ej: ROSA2026, LUNA, AMOR..."
                 value={codigoSecreto}
-                onChange={(e) => setCodigoSecreto(e.target.value.slice(0, 20))}
+                onChange={(e) => { setCodigoSecreto(e.target.value.slice(0, 20)); setErrores(p => ({...p, codigo: ""})); }}
                 className="tracking-widest uppercase"
               />
               <button
@@ -582,6 +597,7 @@ export default function EstrellaCrearPage() {
             <p className="mt-1 text-xs text-muted-foreground">
               La persona destinataria necesitará este código para ver la dedicatoria. Compártelo en privado.
             </p>
+            {errores.codigo && <p className="mt-1 text-xs text-destructive">{errores.codigo}</p>}
           </div>
         </div>
 

@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
   try {
     const { data: estrella } = await supabaseAdmin
       .from("estrellas")
-      .select("id, operacion_id, email_comprador, para, nombre_estrella")
+      .select("id, operacion_id, email_comprador, para, nombre_estrella, codigo_secreto")
       .eq("id", estrella_id)
       .single();
 
@@ -70,8 +70,12 @@ export async function GET(req: NextRequest) {
             <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#0a0a2e;color:#fff;">
               <h1 style="font-size:24px;font-weight:700;margin-bottom:8px;">¡Tu estrella está lista! ✨</h1>
               <p style="color:#aaa;margin-bottom:8px;">La estrella <strong>${estrella.nombre_estrella}</strong> para <strong>${estrella.para}</strong> ya fue pagada.</p>
-              <p style="color:#aaa;margin-bottom:24px;">Comparte el link junto al código secreto para que pueda verla.</p>
-              <a href="${link}" style="display:inline-block;background:#7c3aed;color:#fff;font-weight:600;padding:14px 28px;border-radius:999px;text-decoration:none;margin-bottom:24px;">Ver estrella →</a>
+              <p style="color:#aaa;margin-bottom:16px;">Comparte el link junto al código secreto para que pueda verla.</p>
+              <div style="background:#1a1a3e;border-radius:12px;padding:16px;margin-bottom:24px;">
+                <p style="color:#aaa;font-size:12px;margin:0 0 4px;">Código secreto</p>
+                <p style="color:#fff;font-size:22px;font-weight:700;letter-spacing:0.1em;margin:0;">${estrella.codigo_secreto}</p>
+              </div>
+              <a href="${link}" style="display:inline-block;background:#7c3aed;color:#fff;font-weight:600;padding:14px 28px;border-radius:999px;text-decoration:none;margin-bottom:16px;">Ver estrella →</a>
               <p style="color:#666;font-size:13px;">O copia este link: ${link}</p>
               <hr style="border:none;border-top:1px solid #222;margin:24px 0;" />
               <p style="color:#444;font-size:12px;">perdonaloya.cl — regalos digitales con corazón</p>
@@ -80,7 +84,7 @@ export async function GET(req: NextRequest) {
         }).catch(() => null);
       }
 
-      return NextResponse.redirect(new URL(`/estrella/${estrella_id}`, baseUrl));
+      return NextResponse.redirect(new URL(`/estrella/pago-exitoso?id=${estrella_id}`, baseUrl));
     } else {
       await registrarLog({
         operacion_id,
