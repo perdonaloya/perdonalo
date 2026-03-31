@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -12,7 +12,7 @@ interface Estrella {
   codigo_secreto: string;
 }
 
-export default function PagoExitosoEstrella() {
+function PagoExitosoEstrellaContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const id = searchParams.get("id");
@@ -192,5 +192,17 @@ export default function PagoExitosoEstrella() {
 
       </div>
     </div>
+  );
+}
+
+export default function PagoExitosoEstrella() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "#050618" }}>
+        <p className="text-white/40 text-sm">Cargando...</p>
+      </div>
+    }>
+      <PagoExitosoEstrellaContent />
+    </Suspense>
   );
 }

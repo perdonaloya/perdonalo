@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -10,7 +10,7 @@ interface Carta {
   de: string;
 }
 
-export default function PagoExitosoCarta() {
+function PagoExitosoCartaContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const id = searchParams.get("id");
@@ -177,5 +177,17 @@ export default function PagoExitosoCarta() {
 
       </div>
     </div>
+  );
+}
+
+export default function PagoExitosoCarta() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "#fff5f7" }}>
+        <p className="text-rose-300 text-sm">Cargando...</p>
+      </div>
+    }>
+      <PagoExitosoCartaContent />
+    </Suspense>
   );
 }
