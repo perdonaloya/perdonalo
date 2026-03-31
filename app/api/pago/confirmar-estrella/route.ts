@@ -42,8 +42,23 @@ export async function GET(req: NextRequest) {
     if (paymentData.status === "approved") {
       await supabaseAdmin
         .from("estrellas")
-        .update({ pagada: true })
+        .update({ pagada: true, mp_payment_id: String(payment_id) })
         .eq("id", estrella_id);
+
+      await supabaseAdmin.from("transacciones").insert({
+        estrella_id,
+        producto_id: "estrella",
+        monto: paymentData.transaction_amount ?? 0,
+        moneda: paymentData.currency_id ?? "CLP",
+        estado: "aprobado",
+        preference_id: (paymentData as unknown as Record<string, unknown>)["preference_id"] as string ?? null,
+        payment_id: String(payment_id),
+        mp_payment_id: String(payment_id),
+        payment_status: paymentData.status,
+        metodo_pago: paymentData.payment_method_id ?? null,
+        cuotas: paymentData.installments ?? 1,
+        ip,
+      });
 
       await registrarLog({
         operacion_id,
@@ -78,6 +93,11 @@ export async function GET(req: NextRequest) {
               <a href="${link}" style="display:inline-block;background:#7c3aed;color:#fff;font-weight:600;padding:14px 28px;border-radius:999px;text-decoration:none;margin-bottom:16px;">Ver estrella →</a>
               <p style="color:#666;font-size:13px;">O copia este link: ${link}</p>
               <hr style="border:none;border-top:1px solid #222;margin:24px 0;" />
+              <div style="background:#111132;border-radius:12px;padding:16px 20px;margin-bottom:16px;">
+                <p style="color:#666;font-size:11px;margin:0 0 8px;letter-spacing:0.06em;text-transform:uppercase;">Datos de tu compra</p>
+                <p style="color:#aaa;font-size:13px;margin:0 0 4px;">ID producto: <strong style="color:#fff;">${estrella_id}</strong></p>
+                <p style="color:#aaa;font-size:13px;margin:0;">N° operación MP: <strong style="color:#fff;">${payment_id}</strong></p>
+              </div>
               <p style="color:#444;font-size:12px;">perdonaloya.cl — regalos digitales con corazón</p>
             </div>
           `,
