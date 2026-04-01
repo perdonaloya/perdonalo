@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
     const url = isSandbox ? response.sandbox_init_point : response.init_point;
     return NextResponse.json({ url });
   } catch (err) {
-    const motivo = err instanceof Error ? err.message : "Error desconocido";
+    const motivo = err instanceof Error ? err.message : typeof err === "object" && err !== null ? JSON.stringify(err) : String(err);
     await registrarLog({
       operacion_id,
       tipo: "pago_estrella",
@@ -108,6 +108,6 @@ export async function POST(req: NextRequest) {
       ip,
       datos: { motivo },
     });
-    return NextResponse.json({ error: "Error al iniciar el pago" }, { status: 500 });
+    return NextResponse.json({ error: "Error al iniciar el pago", detalle: motivo }, { status: 500 });
   }
 }
