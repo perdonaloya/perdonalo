@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Preference } from "mercadopago";
-import { mp, isSandbox, PRECIO_ESTRELLA } from "@/lib/mercadopago";
+import { getWebpay, PRECIO_ESTRELLA } from "@/lib/webpay";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { registrarLog, generarOperacionId } from "@/lib/logger";
 
@@ -29,20 +28,11 @@ export async function POST(req: NextRequest) {
 
   const { data: estrella, error: estrellaError } = await supabaseAdmin
     .from("estrellas")
-    .select("id, pagada, email_comprador")
+    .select("id, pagada")
     .eq("id", estrella_id)
     .single();
 
   if (estrellaError || !estrella) {
-    await registrarLog({
-      operacion_id,
-      tipo: "pago_estrella",
-      evento: "fallido",
-      mensaje: `Estrella ${estrella_id} no encontrada — IP ${ip}`,
-      referencia_id: estrella_id,
-      ip,
-      datos: { motivo: "Estrella no encontrada" },
-    });
     return NextResponse.json({ error: "Estrella no encontrada" }, { status: 404 });
   }
 
@@ -52,56 +42,38 @@ export async function POST(req: NextRequest) {
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
 
-  await registrarLog({
-    operacion_id,
-    tipo: "pago_estrella",
-    evento: "ejecutando",
-    mensaje: `Creando preferencia Mercado Pago para estrella ${estrella_id} — monto: $${PRECIO_ESTRELLA} CLP`,
-    referencia_id: estrella_id,
-    ip,
-    datos: { estrella_id, monto: PRECIO_ESTRELLA },
-  });
-
   try {
-    const preference = new Preference(mp);
-    const response = await preference.create({
-      body: {
-        items: [
-          {
-            id: estrella_id,
-            title: "Estrella Dedicada — perdonaloya.cl",
-            quantity: 1,
-            unit_price: PRECIO_ESTRELLA,
-            currency_id: "CLP",
-          },
-        ],
-        external_reference: estrella_id,
-        payer: estrella.email_comprador ? { email: estrella.email_comprador } : undefined,
-        back_urls: {
-          success: `${baseUrl}/estrella/pago-exitoso`,
-          failure: `${baseUrl}/estrella/pago-fallido`,
-          pending: `${baseUrl}/estrella/pago-fallido`,
-        },
-        payment_methods: {
-          excluded_payment_types: [],
-        },
-      },
-    });
+    const tx = getWebpay();
+    const response = await tx.create(
+      operacion_id,
+      `estrella-${estrella_id}`,
+      PRECIO_ESTRELLA,
+      `${baseUrl}/api/pago/confirmar-estrella`
+    );
 
     await supabaseAdmin
       .from("estrellas")
       .update({ operacion_id })
       .eq("id", estrella_id);
 
-    const url = isSandbox ? response.sandbox_init_point : response.init_point;
-    return NextResponse.json({ url });
+    await registrarLog({
+      operacion_id,
+      tipo: "pago_estrella",
+      evento: "ejecutando",
+      mensaje: `Transacción Webpay creada para estrella ${estrella_id}`,
+      referencia_id: estrella_id,
+      ip,
+      datos: { estrella_id, monto: PRECIO_ESTRELLA, token: response.token },
+    });
+
+    return NextResponse.json({ url: response.url, token: response.token });
   } catch (err) {
     const motivo = err instanceof Error ? err.message : typeof err === "object" && err !== null ? JSON.stringify(err) : String(err);
     await registrarLog({
       operacion_id,
       tipo: "pago_estrella",
       evento: "fallido",
-      mensaje: `Error al crear preferencia MP para estrella ${estrella_id} — ${motivo}`,
+      mensaje: `Error al crear transacción Webpay para estrella ${estrella_id} — ${motivo}`,
       referencia_id: estrella_id,
       ip,
       datos: { motivo },

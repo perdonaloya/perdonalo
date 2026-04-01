@@ -35,12 +35,8 @@ function PagoExitosoEstrellaContent() {
       const r = await fetch(`/api/estrellas/${id}`);
       if (!r.ok) { router.push("/"); return; }
       const data: Estrella = await r.json();
-      if (data.pagada) {
-        setEstrella(data);
-        setConfirmando(false);
-      } else {
-        setIntentos((n) => n + 1);
-      }
+      setEstrella(data);
+      setConfirmando(false);
     } catch {
       setIntentos((n) => n + 1);
     }
@@ -48,8 +44,8 @@ function PagoExitosoEstrellaContent() {
 
   useEffect(() => {
     if (!confirmando) return;
-    if (intentos >= 12) { setConfirmando(false); return; } // ~18s máximo
-    const t = setTimeout(cargarEstrella, intentos === 0 ? 0 : 1500);
+    if (intentos >= 3) { setConfirmando(false); return; }
+    const t = setTimeout(cargarEstrella, intentos === 0 ? 0 : 1000);
     return () => clearTimeout(t);
   }, [intentos, confirmando, cargarEstrella]);
 

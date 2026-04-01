@@ -1,32 +1,34 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Payment } from "mercadopago";
-import { mp } from "@/lib/mercadopago";
+import { getWebpay } from "@/lib/webpay";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { registrarLog, generarOperacionId } from "@/lib/logger";
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-export async function GET(req: NextRequest) {
+export async function POST(req: NextRequest) {
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
     req.headers.get("x-real-ip") ??
     "desconocida";
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
-  const { searchParams } = new URL(req.url);
+  const formData = await req.formData();
+  const token = formData.get("token_ws") as string | null;
 
-  const payment_id = searchParams.get("payment_id") ?? searchParams.get("collection_id");
-  const carta_id = searchParams.get("external_reference");
-
-  // Usuario canceló o volvió sin pagar
-  if (!payment_id || !carta_id) {
+  if (!token) {
     return NextResponse.redirect(new URL("/carta/pago-cancelado", baseUrl));
   }
 
   let operacion_id = generarOperacionId();
 
   try {
+    const tx = getWebpay();
+    const result = await tx.commit(token);
+
+    // Buscar carta por operacion_id (buyOrder es "carta-{carta_id}")
+    const carta_id = result.buy_order.replace("carta-", "");
+
     const { data: carta } = await supabaseAdmin
       .from("cartas")
       .select("id, operacion_id, email_comprador, para")
@@ -35,28 +37,23 @@ export async function GET(req: NextRequest) {
 
     if (carta?.operacion_id) operacion_id = carta.operacion_id;
 
-    // Verificar el pago en MP (no confiar solo en los query params)
-    const payment = new Payment(mp);
-    const paymentData = await payment.get({ id: Number(payment_id) });
-
-    if (paymentData.status === "approved") {
+    if (result.response_code === 0) {
       await supabaseAdmin
         .from("cartas")
-        .update({ pagada: true, mp_payment_id: String(payment_id) })
+        .update({ pagada: true, mp_payment_id: token })
         .eq("id", carta_id);
 
       await supabaseAdmin.from("transacciones").insert({
         carta_id,
         producto_id: "carta",
-        monto: paymentData.transaction_amount ?? 0,
-        moneda: paymentData.currency_id ?? "CLP",
+        monto: result.amount,
+        moneda: "CLP",
         estado: "aprobado",
-        preference_id: (paymentData as unknown as Record<string, unknown>)["preference_id"] as string ?? null,
-        payment_id: String(payment_id),
-        mp_payment_id: String(payment_id),
-        payment_status: paymentData.status,
-        metodo_pago: paymentData.payment_method_id ?? null,
-        cuotas: paymentData.installments ?? 1,
+        payment_id: token,
+        mp_payment_id: token,
+        payment_status: "approved",
+        metodo_pago: result.payment_type_code ?? null,
+        cuotas: result.installments_number ?? 1,
         ip,
       });
 
@@ -64,15 +61,10 @@ export async function GET(req: NextRequest) {
         operacion_id,
         tipo: "pago_carta",
         evento: "exito",
-        mensaje: `Pago aprobado — carta ${carta_id} pagada exitosamente desde IP ${ip}`,
+        mensaje: `Pago aprobado — carta ${carta_id} pagada desde IP ${ip}`,
         referencia_id: carta_id,
         ip,
-        datos: {
-          carta_id,
-          payment_id,
-          monto: paymentData.transaction_amount,
-          payment_method: paymentData.payment_method_id,
-        },
+        datos: { carta_id, token, monto: result.amount },
       });
 
       if (carta?.email_comprador) {
@@ -86,12 +78,11 @@ export async function GET(req: NextRequest) {
               <h1 style="font-size:24px;font-weight:700;color:#1a1a2e;margin-bottom:8px;">¡Tu carta está lista! 💝</h1>
               <p style="color:#555;margin-bottom:24px;">La carta para <strong>${carta.para}</strong> ya fue pagada y está lista para compartir.</p>
               <a href="${link}" style="display:inline-block;background:#e11d48;color:#fff;font-weight:600;padding:14px 28px;border-radius:999px;text-decoration:none;margin-bottom:24px;">Ver carta animada →</a>
-              <p style="color:#888;font-size:13px;">O copia este link: ${link}</p>
               <hr style="border:none;border-top:1px solid #eee;margin:24px 0;" />
               <div style="background:#f9fafb;border-radius:12px;padding:16px 20px;margin-bottom:16px;">
-                <p style="color:#888;font-size:11px;margin:0 0 8px;letter-spacing:0.06em;text-transform:uppercase;">Datos de tu compra</p>
+                <p style="color:#888;font-size:11px;margin:0 0 8px;text-transform:uppercase;letter-spacing:0.06em;">Datos de tu compra</p>
                 <p style="color:#374151;font-size:13px;margin:0 0 4px;">ID producto: <strong>${carta_id}</strong></p>
-                <p style="color:#374151;font-size:13px;margin:0;">N° operación MP: <strong>${payment_id}</strong></p>
+                <p style="color:#374151;font-size:13px;margin:0;">Token Webpay: <strong>${token}</strong></p>
               </div>
               <p style="color:#aaa;font-size:12px;">perdonaloya.cl — regalos digitales con corazón</p>
             </div>
@@ -105,31 +96,23 @@ export async function GET(req: NextRequest) {
         operacion_id,
         tipo: "pago_carta",
         evento: "fallido",
-        mensaje: `Pago no aprobado — carta ${carta_id} — estado: ${paymentData.status}`,
+        mensaje: `Pago rechazado — carta ${carta_id} — response_code: ${result.response_code}`,
         referencia_id: carta_id,
         ip,
-        datos: { status: paymentData.status, payment_id },
+        datos: { response_code: result.response_code },
       });
-
       return NextResponse.redirect(new URL(`/carta/pago-fallido?id=${carta_id}`, baseUrl));
     }
   } catch (err) {
-    const motivo =
-      err instanceof Error
-        ? err.message
-        : typeof err === "object" && err !== null
-        ? JSON.stringify(err)
-        : String(err);
+    const motivo = err instanceof Error ? err.message : typeof err === "object" && err !== null ? JSON.stringify(err) : String(err);
     await registrarLog({
       operacion_id,
       tipo: "pago_carta",
       evento: "fallido",
-      mensaje: `Error al confirmar pago desde IP ${ip} — ${motivo}`,
-      referencia_id: carta_id ?? undefined,
+      mensaje: `Error al confirmar pago Webpay — ${motivo}`,
       ip,
       datos: { motivo },
     });
-
     return NextResponse.redirect(new URL("/carta/pago-fallido", baseUrl));
   }
 }

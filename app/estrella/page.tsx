@@ -301,10 +301,19 @@ export default function EstrellaCrearPage() {
         const errData = await resPago.json().catch(() => ({}));
         throw new Error(`iniciar_pago: ${resPago.status} — ${JSON.stringify(errData)}`);
       }
-      const { url } = await resPago.json();
+      const { url, token } = await resPago.json();
 
-      // 3. Redirigir al checkout de Mercado Pago
-      window.location.href = url;
+      // 3. Hacer POST a Webpay con el token
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = url;
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = "token_ws";
+      input.value = token;
+      form.appendChild(input);
+      document.body.appendChild(form);
+      form.submit();
     } catch (err) {
       console.error("[crear estrella]", err);
       setError("No se pudo iniciar el pago. Intenta de nuevo.");

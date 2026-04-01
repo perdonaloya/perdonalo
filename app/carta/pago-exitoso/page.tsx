@@ -33,12 +33,8 @@ function PagoExitosoCartaContent() {
       const r = await fetch(`/api/cartas/${id}`);
       if (!r.ok) { router.push("/"); return; }
       const data: Carta = await r.json();
-      if (data.pagada) {
-        setCarta(data);
-        setConfirmando(false);
-      } else {
-        setIntentos((n) => n + 1);
-      }
+      setCarta(data);
+      setConfirmando(false);
     } catch {
       setIntentos((n) => n + 1);
     }
@@ -46,8 +42,8 @@ function PagoExitosoCartaContent() {
 
   useEffect(() => {
     if (!confirmando) return;
-    if (intentos >= 12) { setConfirmando(false); return; }
-    const t = setTimeout(cargarCarta, intentos === 0 ? 0 : 1500);
+    if (intentos >= 3) { setConfirmando(false); return; }
+    const t = setTimeout(cargarCarta, intentos === 0 ? 0 : 1000);
     return () => clearTimeout(t);
   }, [intentos, confirmando, cargarCarta]);
 
