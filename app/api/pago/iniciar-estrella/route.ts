@@ -76,9 +76,10 @@ export async function POST(req: NextRequest) {
           },
         ],
         external_reference: estrella_id,
+        notification_url: `${baseUrl}/api/webhook/mercadopago`,
         payer: estrella.email_comprador ? { email: estrella.email_comprador } : undefined,
         back_urls: {
-          success: `${baseUrl}/api/pago/confirmar-estrella`,
+          success: `${baseUrl}/estrella/pago-exitoso`,
           failure: `${baseUrl}/estrella/pago-fallido`,
           pending: `${baseUrl}/estrella/pago-fallido`,
         },

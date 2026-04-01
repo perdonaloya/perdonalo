@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
+import { Suspense, useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -10,14 +10,17 @@ interface Estrella {
   de: string;
   nombre_estrella: string;
   codigo_secreto: string;
+  pagada: boolean;
 }
 
 function PagoExitosoEstrellaContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const id = searchParams.get("id");
+  const id = searchParams.get("id") ?? searchParams.get("external_reference");
 
   const [estrella, setEstrella] = useState<Estrella | null>(null);
+  const [confirmando, setConfirmando] = useState(true);
+  const [intentos, setIntentos] = useState(0);
   const [modo, setModo] = useState<"elegir" | "email" | "enviado">("elegir");
   const [emailDest, setEmailDest] = useState("");
   const [enviando, setEnviando] = useState(false);
@@ -26,13 +29,29 @@ function PagoExitosoEstrellaContent() {
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://perdonaloya.cl";
   const link = id ? `${baseUrl}/estrella/${id}` : "";
 
-  useEffect(() => {
-    if (!id) return;
-    fetch(`/api/estrellas/${id}`)
-      .then((r) => r.ok ? r.json() : Promise.reject())
-      .then(setEstrella)
-      .catch(() => router.push("/"));
+  const cargarEstrella = useCallback(async () => {
+    if (!id) { router.push("/"); return; }
+    try {
+      const r = await fetch(`/api/estrellas/${id}`);
+      if (!r.ok) { router.push("/"); return; }
+      const data: Estrella = await r.json();
+      if (data.pagada) {
+        setEstrella(data);
+        setConfirmando(false);
+      } else {
+        setIntentos((n) => n + 1);
+      }
+    } catch {
+      setIntentos((n) => n + 1);
+    }
   }, [id, router]);
+
+  useEffect(() => {
+    if (!confirmando) return;
+    if (intentos >= 12) { setConfirmando(false); return; } // ~18s máximo
+    const t = setTimeout(cargarEstrella, intentos === 0 ? 0 : 1500);
+    return () => clearTimeout(t);
+  }, [intentos, confirmando, cargarEstrella]);
 
   const enviarEmail = async () => {
     if (!emailDest.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(emailDest)) {
@@ -62,10 +81,25 @@ function PagoExitosoEstrellaContent() {
       )
     : "";
 
+  // Confirmando pago
+  if (confirmando) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: "linear-gradient(180deg, #0d0b2e 0%, #050618 60%)" }}>
+        <div className="text-4xl animate-pulse">✨</div>
+        <p className="text-white/70 text-sm">Confirmando tu pago...</p>
+        <p className="text-white/30 text-xs">Esto puede tomar unos segundos</p>
+      </div>
+    );
+  }
+
+  // Pago no confirmado tras los intentos
   if (!estrella) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "#050618" }}>
-        <p className="text-white/40 text-sm">Cargando...</p>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4" style={{ background: "linear-gradient(180deg, #0d0b2e 0%, #050618 60%)" }}>
+        <div className="text-4xl">⏳</div>
+        <p className="text-white/70 text-sm text-center">Tu pago está siendo procesado.</p>
+        <p className="text-white/40 text-xs text-center">Recibirás un correo en cuanto se confirme. Si no llega, contáctanos.</p>
+        <Link href="/" className="mt-4 text-white/30 text-xs hover:text-white/60 transition-colors">Volver al inicio</Link>
       </div>
     );
   }
@@ -76,7 +110,6 @@ function PagoExitosoEstrellaContent() {
     }}>
       <div style={{ maxWidth: 480, width: "100%" }}>
 
-        {/* Confirmación */}
         <div className="text-center mb-8">
           <div className="text-5xl mb-4">✨</div>
           <h1 className="text-2xl font-bold text-white mb-2">¡Pago exitoso!</h1>
@@ -86,7 +119,6 @@ function PagoExitosoEstrellaContent() {
           </p>
         </div>
 
-        {/* Código secreto */}
         <div className="mb-6 rounded-2xl p-5 text-center" style={{
           background: "rgba(255,255,255,0.04)",
           border: "1px solid rgba(255,255,255,0.1)",
@@ -98,7 +130,6 @@ function PagoExitosoEstrellaContent() {
           <p className="text-white/30 text-xs">Guárdalo — {estrella.para} lo necesita para revelar la estrella</p>
         </div>
 
-        {/* Sección compartir */}
         {modo === "elegir" && (
           <div className="rounded-2xl p-6" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
             <p className="text-white/70 text-sm text-center mb-5">
@@ -137,10 +168,7 @@ function PagoExitosoEstrellaContent() {
               onChange={(e) => { setEmailDest(e.target.value); setError(""); }}
               onKeyDown={(e) => e.key === "Enter" && enviarEmail()}
               className="w-full rounded-xl px-4 py-3 text-sm text-white mb-3 outline-none"
-              style={{
-                background: "rgba(255,255,255,0.06)",
-                border: "1px solid rgba(255,255,255,0.12)",
-              }}
+              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}
             />
             {error && <p className="text-red-400 text-xs mb-3">{error}</p>}
             <div className="flex gap-2">
@@ -173,7 +201,6 @@ function PagoExitosoEstrellaContent() {
           </div>
         )}
 
-        {/* Botones inferiores */}
         <div className="mt-6 flex flex-col gap-3">
           <Link
             href={`/estrella/${id}`}
