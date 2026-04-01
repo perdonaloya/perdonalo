@@ -76,7 +76,6 @@ export async function POST(req: NextRequest) {
           },
         ],
         external_reference: carta_id,
-        notification_url: `${baseUrl}/api/webhook/mercadopago`,
         payer: carta.email_comprador ? { email: carta.email_comprador } : undefined,
         back_urls: {
           success: `${baseUrl}/carta/pago-exitoso`,
