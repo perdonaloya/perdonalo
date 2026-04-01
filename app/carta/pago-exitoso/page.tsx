@@ -9,6 +9,7 @@ interface Carta {
   para: string;
   de: string;
   pagada: boolean;
+  tema?: string;
 }
 
 function PagoExitosoCartaContent() {
@@ -70,7 +71,11 @@ function PagoExitosoCartaContent() {
   };
 
   const whatsappTexto = carta
-    ? encodeURIComponent(`💝 Te envié una carta especial, ${carta.para} 💝\n\n👉 ${link}`)
+    ? encodeURIComponent(
+        `💝 Hola ${carta.para}, tengo algo especial para ti.\n\n` +
+        `${carta.de} te preparó una carta animada con todo el corazón.\n\n` +
+        `Ábrela aquí 👇\n${link}`
+      )
     : "";
 
   if (confirmando) {

@@ -6,14 +6,30 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+export async function GET(req: NextRequest) {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+  const { searchParams } = new URL(req.url);
+  const token = searchParams.get("token_ws");
+  if (!token) return NextResponse.redirect(new URL("/carta/pago-cancelado", baseUrl));
+
+  // Reusar la lógica POST con un FormData simulado
+  const formData = new FormData();
+  formData.append("token_ws", token);
+  return handleConfirmar(req, formData);
+}
+
 export async function POST(req: NextRequest) {
+  const formData = await req.formData();
+  return handleConfirmar(req, formData);
+}
+
+async function handleConfirmar(req: NextRequest, formData: FormData) {
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
     req.headers.get("x-real-ip") ??
     "desconocida";
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
-  const formData = await req.formData();
   const token = formData.get("token_ws") as string | null;
 
   if (!token) {
@@ -26,14 +42,14 @@ export async function POST(req: NextRequest) {
     const tx = getWebpay();
     const result = await tx.commit(token);
 
-    // Buscar carta por operacion_id (buyOrder es "carta-{carta_id}")
-    const carta_id = result.buy_order.replace("carta-", "");
-
+    // buy_order guardado en mp_payment_id al iniciar
     const { data: carta } = await supabaseAdmin
       .from("cartas")
-      .select("id, operacion_id, email_comprador, para")
-      .eq("id", carta_id)
+      .select("id, operacion_id, email_comprador, para, de")
+      .eq("mp_payment_id", result.buy_order)
       .single();
+
+    const carta_id = carta?.id ?? "";
 
     if (carta?.operacion_id) operacion_id = carta.operacion_id;
 

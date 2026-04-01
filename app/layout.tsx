@@ -13,8 +13,39 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "perdonaloya.cl — Regalos para reconciliarte",
-  description: "Encuentra el regalo perfecto para pedir perdón o sorprender a alguien especial. Floristerías, chocolaterías y más en Chile.",
+  title: "perdonaloya.cl — Regalos digitales con corazón",
+  description: "Dedica una estrella, envía una carta animada o sorprende a alguien especial con un regalo digital único. Hecho con amor en Chile.",
+  keywords: ["regalo digital", "carta animada", "dedica una estrella", "pedir perdón", "regalo romántico", "Chile", "perdonaloya"],
+  authors: [{ name: "perdonaloya.cl" }],
+  creator: "perdonaloya.cl",
+  metadataBase: new URL("https://perdonaloya.cl"),
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    url: "https://perdonaloya.cl",
+    title: "perdonaloya.cl — Regalos digitales con corazón",
+    description: "Dedica una estrella, envía una carta animada o sorprende a alguien especial con un regalo digital único. Hecho con amor en Chile.",
+    siteName: "perdonaloya.cl",
+    images: [{ url: "/logo.png", width: 512, height: 512, alt: "perdonaloya.cl" }],
+    locale: "es_CL",
+  },
+  twitter: {
+    card: "summary",
+    title: "perdonaloya.cl — Regalos digitales con corazón",
+    description: "Dedica una estrella, envía una carta animada o sorprende a alguien especial con un regalo digital único.",
+    images: ["/logo.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({

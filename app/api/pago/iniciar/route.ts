@@ -44,16 +44,18 @@ export async function POST(req: NextRequest) {
 
   try {
     const tx = getWebpay();
+    const buy_order = carta_id.replace(/-/g, "").slice(0, 26);
+    const session_id = operacion_id.replace(/-/g, "").slice(0, 61);
     const response = await tx.create(
-      operacion_id,
-      `carta-${carta_id}`,
+      buy_order,
+      session_id,
       PRECIO_CARTA,
       `${baseUrl}/api/pago/confirmar`
     );
 
     await supabaseAdmin
       .from("cartas")
-      .update({ operacion_id })
+      .update({ operacion_id: session_id, mp_payment_id: buy_order })
       .eq("id", carta_id);
 
     await registrarLog({
@@ -68,6 +70,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ url: response.url, token: response.token });
   } catch (err) {
+    console.error("[iniciar pago carta]", err);
     const motivo = err instanceof Error ? err.message : typeof err === "object" && err !== null ? JSON.stringify(err) : String(err);
     await registrarLog({
       operacion_id,

@@ -6,14 +6,28 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+export async function GET(req: NextRequest) {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+  const { searchParams } = new URL(req.url);
+  const token = searchParams.get("token_ws");
+  if (!token) return NextResponse.redirect(new URL("/estrella/pago-cancelado", baseUrl));
+  const formData = new FormData();
+  formData.append("token_ws", token);
+  return handleConfirmar(req, formData);
+}
+
 export async function POST(req: NextRequest) {
+  const formData = await req.formData();
+  return handleConfirmar(req, formData);
+}
+
+async function handleConfirmar(req: NextRequest, formData: FormData) {
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
     req.headers.get("x-real-ip") ??
     "desconocida";
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
-  const formData = await req.formData();
   const token = formData.get("token_ws") as string | null;
 
   if (!token) {
@@ -26,13 +40,13 @@ export async function POST(req: NextRequest) {
     const tx = getWebpay();
     const result = await tx.commit(token);
 
-    const estrella_id = result.buy_order.replace("estrella-", "");
-
     const { data: estrella } = await supabaseAdmin
       .from("estrellas")
       .select("id, operacion_id, email_comprador, para, nombre_estrella, codigo_secreto")
-      .eq("id", estrella_id)
+      .eq("mp_payment_id", result.buy_order)
       .single();
+
+    const estrella_id = estrella?.id ?? "";
 
     if (estrella?.operacion_id) operacion_id = estrella.operacion_id;
 

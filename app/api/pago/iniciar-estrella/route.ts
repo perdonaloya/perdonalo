@@ -44,16 +44,18 @@ export async function POST(req: NextRequest) {
 
   try {
     const tx = getWebpay();
+    const buy_order = estrella_id.replace(/-/g, "").slice(0, 26);
+    const session_id = operacion_id.replace(/-/g, "").slice(0, 61);
     const response = await tx.create(
-      operacion_id,
-      `estrella-${estrella_id}`,
+      buy_order,
+      session_id,
       PRECIO_ESTRELLA,
       `${baseUrl}/api/pago/confirmar-estrella`
     );
 
     await supabaseAdmin
       .from("estrellas")
-      .update({ operacion_id })
+      .update({ operacion_id: session_id, mp_payment_id: buy_order })
       .eq("id", estrella_id);
 
     await registrarLog({
