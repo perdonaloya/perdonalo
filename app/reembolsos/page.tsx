@@ -28,7 +28,7 @@ export default function ReembolsosPage() {
 
         <section className="space-y-2">
           <h2 className="font-semibold text-base">Cómo solicitar un reembolso</h2>
-          <p><a href={process.env.NEXT_PUBLIC_WHATSAPP_URL} className="underline underline-offset-4 hover:text-primary transition-colors">Escríbenos por WhatsApp</a> dentro de las 48 horas siguientes al pago, indicando:</p>
+          <p><a href={`https://wa.me/${process.env.NEXT_PUBLIC_PHONE_NUMBER}`} className="underline underline-offset-4 hover:text-primary transition-colors">Escríbenos por WhatsApp</a> dentro de las 48 horas siguientes al pago, indicando:</p>
           <ul className="list-disc list-inside space-y-1 text-muted-foreground">
             <li>El enlace de tu regalo (ej: perdonaloya.cl/carta/xxx)</li>
             <li>El motivo de la solicitud</li>

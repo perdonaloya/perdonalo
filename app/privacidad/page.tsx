@@ -43,7 +43,7 @@ export default function PrivacidadPage() {
 
         <section className="space-y-2">
           <h2 className="font-semibold text-base">5. Tus derechos (Ley 19.628)</h2>
-          <p>Tienes derecho a acceder, rectificar o eliminar tus datos personales en cualquier momento. Para ejercer estos derechos <a href={process.env.NEXT_PUBLIC_WHATSAPP_URL} className="underline underline-offset-4 hover:text-primary transition-colors">contáctanos por WhatsApp</a>.</p>
+          <p>Tienes derecho a acceder, rectificar o eliminar tus datos personales en cualquier momento. Para ejercer estos derechos <a href={`https://wa.me/${process.env.NEXT_PUBLIC_PHONE_NUMBER}`} className="underline underline-offset-4 hover:text-primary transition-colors">contáctanos por WhatsApp</a>.</p>
         </section>
 
         <section className="space-y-2">
