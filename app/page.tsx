@@ -3,6 +3,62 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Navbar } from "@/components/Navbar";
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://perdonaloya.cl/#organization",
+      name: "perdonaloya.cl",
+      url: "https://perdonaloya.cl",
+      logo: "https://perdonaloya.cl/logo.png",
+      description: "Plataforma chilena de regalos digitales románticos: cartas animadas y estrellas dedicadas.",
+      areaServed: { "@type": "Country", name: "Chile" },
+      contactPoint: {
+        "@type": "ContactPoint",
+        contactType: "customer support",
+        availableLanguage: "Spanish",
+      },
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://perdonaloya.cl/#website",
+      url: "https://perdonaloya.cl",
+      name: "perdonaloya.cl",
+      publisher: { "@id": "https://perdonaloya.cl/#organization" },
+      inLanguage: "es-CL",
+    },
+    {
+      "@type": "Product",
+      name: "Carta animada digital",
+      description: "Carta digital animada y personalizada con tu mensaje. Lista en minutos, compartible por WhatsApp.",
+      url: "https://perdonaloya.cl/carta",
+      brand: { "@id": "https://perdonaloya.cl/#organization" },
+      offers: {
+        "@type": "Offer",
+        price: "1990",
+        priceCurrency: "CLP",
+        availability: "https://schema.org/InStock",
+        url: "https://perdonaloya.cl/carta",
+      },
+    },
+    {
+      "@type": "Product",
+      name: "Estrella dedicada digital",
+      description: "Dedica una estrella en el firmamento digital con un mensaje secreto y animación personalizada.",
+      url: "https://perdonaloya.cl/estrella",
+      brand: { "@id": "https://perdonaloya.cl/#organization" },
+      offers: {
+        "@type": "Offer",
+        price: "2990",
+        priceCurrency: "CLP",
+        availability: "https://schema.org/InStock",
+        url: "https://perdonaloya.cl/estrella",
+      },
+    },
+  ],
+};
+
 const pasos = [
   {
     numero: "01",
@@ -24,6 +80,10 @@ const pasos = [
 export default function Home() {
   return (
     <div className="min-h-screen bg-white pt-16">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Navbar>
         {/* <Button variant="ghost" asChild><Link href="/explorar">Ver tiendas</Link></Button> */}
         <Button variant="ghost" data-variant="ghost" asChild><Link href="/carta">💝 Carta</Link></Button>
