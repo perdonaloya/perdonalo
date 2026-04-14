@@ -109,10 +109,13 @@ function PagoExitosoEstrellaContent() {
         <div className="text-center mb-8">
           <div className="text-5xl mb-4">✨</div>
           <h1 className="text-2xl font-bold text-white mb-2">¡Pago exitoso!</h1>
-          <p className="text-white/50 text-sm">
+          <p className="text-white/50 text-sm mb-3">
             La estrella <strong className="text-white/80">{estrella.nombre_estrella}</strong> para{" "}
             <strong className="text-white/80">{estrella.para}</strong> está lista.
           </p>
+          <div className="rounded-xl px-4 py-2.5 text-xs text-yellow-200/70 inline-block" style={{ background: "rgba(234,179,8,0.08)", border: "1px solid rgba(234,179,8,0.15)" }}>
+            📬 Te enviamos un correo de confirmación. Si no lo ves, revisa tu carpeta de <strong>spam</strong>.
+          </div>
         </div>
 
         <div className="mb-6 rounded-2xl p-5 text-center" style={{

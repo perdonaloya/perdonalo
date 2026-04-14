@@ -291,7 +291,7 @@ export default function EstrellaCrearPage() {
       }
       const { id: estrella_id } = await resEstrella.json();
 
-      // 2. Iniciar el pago en Mercado Pago
+      // 2. Iniciar el pago en Webpay (Transbank)
       const resPago = await fetch("/api/pago/iniciar-estrella", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

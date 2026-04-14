@@ -67,6 +67,7 @@ async function handleConfirmar(req: NextRequest, formData: FormData) {
         payment_status: "approved",
         metodo_pago: result.payment_type_code ?? null,
         cuotas: result.installments_number ?? 1,
+        email_comprador: estrella?.email_comprador ?? null,
         ip,
       });
 

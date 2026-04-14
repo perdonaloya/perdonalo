@@ -143,7 +143,7 @@ export default function CartaPage() {
       if (!resCarta.ok) throw new Error();
       const { id: carta_id } = await resCarta.json();
 
-      // 2. Iniciar el pago en Mercado Pago
+      // 2. Iniciar el pago en Webpay (Transbank)
       const resPago = await fetch("/api/pago/iniciar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

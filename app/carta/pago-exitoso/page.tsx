@@ -108,9 +108,12 @@ function PagoExitosoCartaContent() {
         <div className="text-center mb-8">
           <div className="text-5xl mb-4">💝</div>
           <h1 className="text-2xl font-bold text-gray-800 mb-2">¡Pago exitoso!</h1>
-          <p className="text-gray-500 text-sm">
+          <p className="text-gray-500 text-sm mb-3">
             La carta para <strong className="text-gray-700">{carta.para}</strong> está lista.
           </p>
+          <div className="rounded-xl px-4 py-2.5 text-xs text-amber-700 inline-block" style={{ background: "#fef9c3", border: "1px solid #fde68a" }}>
+            📬 Te enviamos un correo de confirmación. Si no lo ves, revisa tu carpeta de <strong>spam</strong>.
+          </div>
         </div>
 
         {modo === "elegir" && (
