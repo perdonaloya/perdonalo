@@ -17,6 +17,10 @@ export async function GET(req: NextRequest) {
     return handleCancelado(req, tbkToken, tbkOrderId);
   }
 
+  if (!tbkToken && tbkOrderId) {
+    return handleTimeout(req, tbkOrderId);
+  }
+
   if (!token) return NextResponse.redirect(new URL("/estrella/pago-cancelado", baseUrl));
   const formData = new FormData();
   formData.append("token_ws", token);
@@ -30,6 +34,11 @@ export async function POST(req: NextRequest) {
 
   if (tbkToken && tbkOrderId) {
     return handleCancelado(req, tbkToken, tbkOrderId);
+  }
+
+  // Timeout: solo llega TBK_ORDER_ID sin token
+  if (!tbkToken && tbkOrderId) {
+    return handleTimeout(req, tbkOrderId);
   }
 
   return handleConfirmar(req, formData);
@@ -77,6 +86,48 @@ async function handleCancelado(req: NextRequest, tbkToken: string, tbkOrderId: s
   return NextResponse.redirect(new URL("/estrella/pago-cancelado", baseUrl));
 }
 
+async function handleTimeout(req: NextRequest, tbkOrderId: string) {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    req.headers.get("x-real-ip") ??
+    "desconocida";
+
+  const { data: estrella } = await supabaseAdmin
+    .from("estrellas")
+    .select("id, operacion_id, email_comprador")
+    .eq("mp_payment_id", tbkOrderId)
+    .single();
+
+  const estrella_id = estrella?.id ?? null;
+  const operacion_id = estrella?.operacion_id ?? generarOperacionId();
+
+  await supabaseAdmin.from("transacciones").insert({
+    estrella_id,
+    producto_id: "estrella",
+    monto: 0,
+    moneda: "CLP",
+    estado: "timeout",
+    payment_id: null,
+    mp_payment_id: tbkOrderId,
+    payment_status: "timeout",
+    email_comprador: estrella?.email_comprador ?? null,
+    ip,
+  });
+
+  await registrarLog({
+    operacion_id,
+    tipo: "pago_estrella",
+    evento: "fallido",
+    mensaje: `Timeout en formulario Webpay — estrella ${estrella_id} — TBK_ORDER_ID: ${tbkOrderId}`,
+    referencia_id: estrella_id ?? undefined,
+    ip,
+    datos: { tbkOrderId },
+  });
+
+  return NextResponse.redirect(new URL("/estrella/pago-cancelado", baseUrl));
+}
+
 async function handleConfirmar(req: NextRequest, formData: FormData) {
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
@@ -85,6 +136,13 @@ async function handleConfirmar(req: NextRequest, formData: FormData) {
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
   const token = formData.get("token_ws") as string | null;
+  const tbkToken = formData.get("TBK_TOKEN") as string | null;
+  const tbkOrderId = formData.get("TBK_ORDER_ID") as string | null;
+
+  // Error en formulario: llegan token_ws + TBK_TOKEN juntos
+  if (token && tbkToken && tbkOrderId) {
+    return handleCancelado(req, tbkToken, tbkOrderId);
+  }
 
   if (!token) {
     return NextResponse.redirect(new URL("/estrella/pago-cancelado", baseUrl));

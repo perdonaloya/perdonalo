@@ -68,7 +68,6 @@ export async function POST(req: NextRequest) {
       datos: { estrella_id, monto: PRECIO_ESTRELLA, token: response.token },
     });
 
-    console.log(`[webpay] token estrella ${estrella_id}:`, response.token);
     return NextResponse.json({ url: response.url, token: response.token });
   } catch (err) {
     const motivo = err instanceof Error ? err.message : typeof err === "object" && err !== null ? JSON.stringify(err) : String(err);
