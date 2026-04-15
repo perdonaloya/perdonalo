@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     await supabaseAdmin.from("transacciones").insert({
       estrella_id,
       producto_id: "estrella",
-      monto: null,
+      monto: 0,
       moneda: "CLP",
       estado: "cancelado",
       payment_id: tbkToken,
