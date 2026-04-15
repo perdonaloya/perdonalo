@@ -10,62 +10,71 @@ export async function GET(req: NextRequest) {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
   const { searchParams } = new URL(req.url);
   const token = searchParams.get("token_ws");
-  if (!token) return NextResponse.redirect(new URL("/carta/pago-cancelado", baseUrl));
+  const tbkToken = searchParams.get("TBK_TOKEN");
+  const tbkOrderId = searchParams.get("TBK_ORDER_ID");
 
-  // Reusar la lógica POST con un FormData simulado
+  if (tbkToken && tbkOrderId) {
+    return handleCancelado(req, tbkToken, tbkOrderId);
+  }
+
+  if (!token) return NextResponse.redirect(new URL("/carta/pago-cancelado", baseUrl));
   const formData = new FormData();
   formData.append("token_ws", token);
   return handleConfirmar(req, formData);
 }
 
 export async function POST(req: NextRequest) {
+  const formData = await req.formData();
+  const tbkToken = formData.get("TBK_TOKEN") as string | null;
+  const tbkOrderId = formData.get("TBK_ORDER_ID") as string | null;
+
+  if (tbkToken && tbkOrderId) {
+    return handleCancelado(req, tbkToken, tbkOrderId);
+  }
+
+  return handleConfirmar(req, formData);
+}
+
+async function handleCancelado(req: NextRequest, tbkToken: string, tbkOrderId: string) {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
     req.headers.get("x-real-ip") ??
     "desconocida";
 
-  const formData = await req.formData();
-  const tbkToken = formData.get("TBK_TOKEN") as string | null;
-  const tbkOrderId = formData.get("TBK_ORDER_ID") as string | null;
+  const { data: carta } = await supabaseAdmin
+    .from("cartas")
+    .select("id, operacion_id, email_comprador")
+    .eq("mp_payment_id", tbkOrderId)
+    .single();
 
-  if (tbkToken && tbkOrderId) {
-    const { data: carta } = await supabaseAdmin
-      .from("cartas")
-      .select("id, operacion_id, email_comprador")
-      .eq("mp_payment_id", tbkOrderId)
-      .single();
+  const carta_id = carta?.id ?? null;
+  const operacion_id = carta?.operacion_id ?? generarOperacionId();
 
-    const carta_id = carta?.id ?? null;
-    const operacion_id = carta?.operacion_id ?? generarOperacionId();
+  await supabaseAdmin.from("transacciones").insert({
+    carta_id,
+    producto_id: "carta",
+    monto: 0,
+    moneda: "CLP",
+    estado: "cancelado",
+    payment_id: tbkToken,
+    mp_payment_id: tbkToken,
+    payment_status: "cancelled",
+    email_comprador: carta?.email_comprador ?? null,
+    ip,
+  });
 
-    await supabaseAdmin.from("transacciones").insert({
-      carta_id,
-      producto_id: "carta",
-      monto: 0,
-      moneda: "CLP",
-      estado: "cancelado",
-      payment_id: tbkToken,
-      mp_payment_id: tbkToken,
-      payment_status: "cancelled",
-      email_comprador: carta?.email_comprador ?? null,
-      ip,
-    });
+  await registrarLog({
+    operacion_id,
+    tipo: "pago_carta",
+    evento: "cancelado",
+    mensaje: `Pago cancelado por usuario — carta ${carta_id} — TBK_ORDER_ID: ${tbkOrderId}`,
+    referencia_id: carta_id ?? undefined,
+    ip,
+    datos: { tbkToken, tbkOrderId },
+  });
 
-    await registrarLog({
-      operacion_id,
-      tipo: "pago_carta",
-      evento: "cancelado",
-      mensaje: `Pago cancelado por usuario — carta ${carta_id} — TBK_ORDER_ID: ${tbkOrderId}`,
-      referencia_id: carta_id ?? undefined,
-      ip,
-      datos: { tbkToken, tbkOrderId },
-    });
-
-    return NextResponse.redirect(new URL("/carta/pago-cancelado", baseUrl));
-  }
-
-  return handleConfirmar(req, formData);
+  return NextResponse.redirect(new URL("/carta/pago-cancelado", baseUrl));
 }
 
 async function handleConfirmar(req: NextRequest, formData: FormData) {
