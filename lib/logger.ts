@@ -1,6 +1,6 @@
 import { supabaseAdmin } from "@/lib/supabase-server";
 
-type Evento = "iniciando" | "ejecutando" | "exito" | "fallido";
+type Evento = "iniciando" | "ejecutando" | "exito" | "fallido" | "cancelado";
 
 export function generarOperacionId(): string {
   return crypto.randomUUID();
