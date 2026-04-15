@@ -109,6 +109,21 @@ async function handleConfirmar(req: NextRequest, formData: FormData) {
 
       return NextResponse.redirect(new URL(`/carta/pago-exitoso?id=${carta_id}`, baseUrl));
     } else {
+      await supabaseAdmin.from("transacciones").insert({
+        carta_id: carta_id || null,
+        producto_id: "carta",
+        monto: result.amount,
+        moneda: "CLP",
+        estado: "rechazado",
+        payment_id: token,
+        mp_payment_id: token,
+        payment_status: "rejected",
+        metodo_pago: result.payment_type_code ?? null,
+        cuotas: result.installments_number ?? 1,
+        email_comprador: carta?.email_comprador ?? null,
+        ip,
+      });
+
       await registrarLog({
         operacion_id,
         tipo: "pago_carta",

@@ -110,6 +110,21 @@ async function handleConfirmar(req: NextRequest, formData: FormData) {
 
       return NextResponse.redirect(new URL(`/estrella/pago-exitoso?id=${estrella_id}`, baseUrl));
     } else {
+      await supabaseAdmin.from("transacciones").insert({
+        estrella_id: estrella_id || null,
+        producto_id: "estrella",
+        monto: result.amount,
+        moneda: "CLP",
+        estado: "rechazado",
+        payment_id: token,
+        mp_payment_id: token,
+        payment_status: "rejected",
+        metodo_pago: result.payment_type_code ?? null,
+        cuotas: result.installments_number ?? 1,
+        email_comprador: estrella?.email_comprador ?? null,
+        ip,
+      });
+
       await registrarLog({
         operacion_id,
         tipo: "pago_estrella",
