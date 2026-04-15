@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { Resend } from "resend";
+import { verificarAdmin } from "@/lib/admin-auth";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-
-function autenticado(req: NextRequest) {
-  return req.headers.get("x-admin-secret") === process.env.ADMIN_SECRET;
-}
 
 async function geocodificar(direccion: string, comuna: string): Promise<{ lat: number; lng: number } | null> {
   try {
@@ -75,7 +72,8 @@ async function enviarEmailAprobacion(solicitud: {
 
 // POST /api/admin/solicitudes/:id/aprobar
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  if (!autenticado(req)) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  const authError = verificarAdmin(req);
+  if (authError) return authError;
 
   const { id } = await params;
 

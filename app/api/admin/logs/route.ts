@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
+import { verificarAdmin } from "@/lib/admin-auth";
 
 export async function GET(req: NextRequest) {
-  const adminSecret = req.headers.get("x-admin-secret");
-  if (adminSecret !== process.env.ADMIN_SECRET) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-  }
+  const authError = verificarAdmin(req);
+  if (authError) return authError;
 
   const { data, error } = await supabaseAdmin
     .from("logs")

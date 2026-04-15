@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
-
-function autenticado(req: NextRequest) {
-  return req.headers.get("x-admin-secret") === process.env.ADMIN_SECRET;
-}
+import { verificarAdmin } from "@/lib/admin-auth";
 
 // POST /api/admin/solicitudes/:id/rechazar
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  if (!autenticado(req)) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  const authError = verificarAdmin(req);
+  if (authError) return authError;
 
   const { id } = await params;
 

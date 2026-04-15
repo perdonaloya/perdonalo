@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
-
-function autenticado(req: NextRequest) {
-  return req.headers.get("x-admin-secret") === process.env.ADMIN_SECRET;
-}
+import { verificarAdmin } from "@/lib/admin-auth";
 
 // GET /api/admin/tiendas — todas (activas e inactivas)
 export async function GET(req: NextRequest) {
-  if (!autenticado(req)) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  const authError = verificarAdmin(req);
+  if (authError) return authError;
 
   const { data, error } = await supabaseAdmin
     .from("tiendas")
