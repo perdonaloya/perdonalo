@@ -213,8 +213,7 @@ async function handleConfirmar(req: NextRequest, formData: FormData) {
               <hr style="border:none;border-top:1px solid #222;margin:24px 0;" />
               <div style="background:#111132;border-radius:12px;padding:16px 20px;margin-bottom:16px;">
                 <p style="color:#666;font-size:11px;margin:0 0 8px;text-transform:uppercase;letter-spacing:0.06em;">Datos de tu compra</p>
-                <p style="color:#aaa;font-size:13px;margin:0 0 4px;">ID producto: <strong style="color:#fff;">${estrella_id}</strong></p>
-                <p style="color:#aaa;font-size:13px;margin:0;">Token Webpay: <strong style="color:#fff;">${token}</strong></p>
+                <p style="color:#aaa;font-size:13px;margin:0;">ID producto: <strong style="color:#fff;">${estrella_id}</strong></p>
               </div>
               <p style="color:#444;font-size:12px;">perdonaloya.cl — regalos digitales con corazón</p>
             </div>

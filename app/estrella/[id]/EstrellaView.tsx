@@ -234,10 +234,6 @@ function ShareButton({ id, para }: { id: string; para: string }) {
             className="rounded-full bg-[#25D366] px-5 py-2.5 text-sm font-semibold text-white shadow-lg hover:scale-105 transition-all flex items-center gap-2">
             <span>💬</span> WhatsApp
           </a>
-          <a href={`mailto:?subject=Hay una estrella dedicada para ti ✨&body=Mira lo que te mandé: ${url}`}
-            className="rounded-full bg-gray-700 px-5 py-2.5 text-sm font-semibold text-white shadow-lg hover:scale-105 transition-all flex items-center gap-2">
-            <span>✉️</span> Correo
-          </a>
           <button onClick={copiar}
             className="rounded-full px-5 py-2.5 text-sm font-semibold text-white shadow-lg hover:scale-105 transition-all flex items-center gap-2"
             style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.18)" }}>
