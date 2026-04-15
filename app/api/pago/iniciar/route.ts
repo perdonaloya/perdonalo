@@ -2,8 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { getWebpay, PRECIO_CARTA } from "@/lib/webpay";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { registrarLog, generarOperacionId } from "@/lib/logger";
+import { rateLimitPago } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
+  const limitError = rateLimitPago(req);
+  if (limitError) return limitError;
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
     req.headers.get("x-real-ip") ??
