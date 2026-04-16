@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
 };
 
 export default withSentryConfig(nextConfig, {
-  org: "o4510924712378368",
+  org: "perdonalo",
   project: "perdonalo",
   silent: true,
   widenClientFileUpload: true,
