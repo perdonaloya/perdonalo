@@ -9,6 +9,7 @@ import CartaSecreta from "./temas/CartaSecreta";
 import Mariposas from "./temas/Mariposas";
 import Petals from "./temas/Petals";
 import Cumpleanos from "./temas/Cumpleanos";
+import DiaMadres from "./temas/DiaMadres";
 
 function ShareButton({ id }: { id: string }) {
   const [abierto, setAbierto] = useState(false);
@@ -145,6 +146,7 @@ function TemaComponent({ carta }: { carta: Carta }) {
     case "mariposas": return <Mariposas {...props} />;
     case "petals": return <Petals {...props} />;
     case "cumpleanos": return <Cumpleanos {...props} />;
+    case "dia-madres": return <DiaMadres {...props} />;
     default: return <Rosa {...props} />;
   }
 }

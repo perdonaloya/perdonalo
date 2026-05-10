@@ -35,6 +35,12 @@ export const TEMAS = {
     ocasion: "Cumpleaños",
     preview: "from-yellow-300 to-pink-500",
   },
+  "dia-madres": {
+    emoji: "🌷",
+    nombre: "Día de las Madres",
+    ocasion: "Día de la Madre",
+    preview: "from-rose-200 to-amber-300",
+  },
 } as const;
 
 export type TemaKey = keyof typeof TEMAS;

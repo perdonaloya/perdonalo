@@ -13,6 +13,7 @@ import CartaSecreta from "./[id]/temas/CartaSecreta";
 import Mariposas from "./[id]/temas/Mariposas";
 import Petals from "./[id]/temas/Petals";
 import Cumpleanos from "./[id]/temas/Cumpleanos";
+import DiaMadres from "./[id]/temas/DiaMadres";
 
 const PREVIEW = {
   para: "Camila",
@@ -28,6 +29,7 @@ function TemaPreviewContent({ tema }: { tema: TemaKey }) {
     case "mariposas": return <Mariposas {...PREVIEW} />;
     case "petals": return <Petals {...PREVIEW} />;
     case "cumpleanos": return <Cumpleanos {...PREVIEW} />;
+    case "dia-madres": return <DiaMadres {...PREVIEW} />;
   }
 }
 

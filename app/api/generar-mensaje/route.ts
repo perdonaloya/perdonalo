@@ -7,20 +7,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Faltan datos" }, { status: 400 });
   }
 
-  const prompt = `Eres un escritor empático especializado en mensajes de disculpa y reconciliación.
+  const prompt = `Eres un escritor empático que ayuda a las personas a expresar sus sentimientos en mensajes personales.
 Alguien te describe su situación y necesitas escribir el mensaje por él.
 
 Situación: "${situacion}"
 
-Escribe un mensaje breve, sincero y emotivo en primera persona que pueda enviarle a quien lastimó.
+Primero identifica el tono que corresponde según la situación:
+- Si hay una falta, error o conflicto → mensaje de disculpa o reconciliación
+- Si es un cumpleaños → mensaje de felicitación cálido y personal
+- Si es amor o romance → mensaje afectuoso o apasionado
+- Si es agradecimiento → mensaje de gratitud sincero
+- Si es apoyo o ánimo → mensaje motivador y cercano
+- Si es otro contexto → adáptate naturalmente a lo que pide la situación
+
+Escribe el mensaje en primera persona, dirigido directamente a la persona.
 
 Instrucciones:
 - Primera persona, español latinoamericano casual pero sincero
 - Máximo 230 caracteres
 - Sin comillas al inicio ni al final
 - Sin frases hechas o clichés
-- Que suene humano, específico a la situación
-- Solo el mensaje, sin explicaciones`;
+- Que suene humano y específico a la situación
+- Solo el mensaje, sin explicaciones ni etiquetas`;
 
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
