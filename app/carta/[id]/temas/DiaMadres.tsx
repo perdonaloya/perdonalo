@@ -20,6 +20,11 @@ export default function DiaMadres({ para, de, mensaje }: Props) {
         .dm-scene {
           perspective: 1200px;
         }
+        @media (min-width: 640px) {
+          .dm-scene {
+            transform: translateX(-25%);
+          }
+        }
         .dm-flipper {
           transform-style: preserve-3d;
           transform-origin: left center;
@@ -53,7 +58,7 @@ export default function DiaMadres({ para, de, mensaje }: Props) {
       {/* Tarjeta — translateX(-25%) centra la portada (mitad derecha del scene) */}
       <div
         className={`dm-scene relative cursor-pointer drop-shadow-xl ${open ? "is-open" : ""}`}
-        style={{ width: "min(600px, 96vw)", aspectRatio: "3/2", transform: "translateX(-25%)" }}
+        style={{ width: "min(600px, 96vw)", aspectRatio: "3/2" }}
         onClick={() => setOpen(v => !v)}
       >
         {/* Interior derecho (mensaje) — fijo detrás de la portada */}
